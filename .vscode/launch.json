@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${fileDirname}/output",
+      "args": [
+        "${input:executableArgs}"
+      ],
+      "cwd": "${fileDirname}",
+      "preLaunchTask": "build",
+      "postDebugTask": "clean"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "executableArgs",
+      "type": "promptString",
+      "description": "인자를 입력해 주세요.\n",
+      "default": ""
+    }
+  ]
+}

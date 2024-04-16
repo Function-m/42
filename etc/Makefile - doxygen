@@ -1,0 +1,122 @@
+# 프로젝트 이름
+PROJECT_NAME=Exercise 00: Megaphone
+
+# 글자 ANSI 정의
+BOLD        =   \033[1m
+GREEN       =   \033[0;32m
+INIT_ANSI   =   \033[0m     # 초기화
+
+######################################### 이하 컴파일 관련 #########################################
+
+# 실행 파일 이름
+EXECUTABLE = megaphone
+
+# 소스 파일 및 오브젝트 파일 찾기 및 정의
+SRC_DIR = src
+INCLUDE_DIR = include
+BUILD_DIR = build
+OBJ_DIR = $(BUILD_DIR)/objs
+DEP_DIR = $(BUILD_DIR)/deps
+SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
+OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+DEPENDS = $(OBJECTS:$(OBJ_DIR)/%.o=$(DEP_DIR)/%.d)
+
+# 컴파일러 설정
+CXX = c++
+CXXFLAGS = -g -Wall -Wextra -Werror -std=c++98 -I$(INCLUDE_DIR)
+
+# 기본 타겟 설정
+.PHONY: all clean re
+
+# 'make all' 또는 'make' 규칙
+all: $(EXECUTABLE)
+	@echo "\n$(GREEN)$(BOLD)Build complete.$(INIT_ANSI)"
+
+# 실행 파일 빌드 규칙
+$(EXECUTABLE): $(OBJECTS)
+	@echo "\n$(GREEN)Linking...$(INIT_ANSI)"
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+# 오브젝트 파일 및 의존성 파일 빌드 규칙
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@echo "\n$(GREEN)Compiling $<...$(INIT_ANSI)"
+	@mkdir -p $(OBJ_DIR) $(DEP_DIR)
+	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@ -MF $(DEP_DIR)/$*.d
+
+# 'make clean' 규칙
+clean:
+	@echo "\n$(GREEN)Cleaning...$(INIT_ANSI)"
+	rm -rf $(BUILD_DIR) $(EXECUTABLE)
+	@echo "\n$(GREEN)$(BOLD)Cleaned.$(INIT_ANSI)"
+
+# 'make re' 규칙
+re:
+	$(MAKE) clean
+	$(MAKE) all
+
+# 의존성 파일 포함
+-include $(DEPENDS)
+
+######################################### 이하 Doxygen 관련 #########################################
+
+# 변수 정의
+# MAINPAGE = readme.md
+DOXYFILE = doxygen-setting
+DOCS_DIR = doxygen
+UNAME_S = $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+SED_COMMAND = sed -i
+BROWSER = xdg-open
+endif
+ifeq ($(UNAME_S),Darwin) # macOS
+SED_COMMAND = sed -i ''
+BROWSER = open
+endif
+
+.PHONY: doxygen doxygen-docs doxygen-clean $(DOXYFILE)
+
+# 생성된 Doxygen 문서를 기본 웹 브라우저에서 열기
+doxygen:
+	@echo "$(GREEN)Starting documentation process...$(INIT_ANSI)"
+	$(MAKE) doxygen-docs
+	@echo "$(GREEN)Opening documentation in browser...$(INIT_ANSI)"
+	$(BROWSER) $(DOCS_DIR)/html/index.html
+
+# Doxygen 문서 생성
+doxygen-docs: $(DOXYFILE)
+	@echo "$(GREEN)Creating documentation...$(INIT_ANSI)"
+	doxygen $(DOXYFILE)
+	@echo "$(GREEN)Removing existing documentation directory...$(INIT_ANSI)"
+	rm -rf $(DOCS_DIR)/html $(DOCS_DIR)/latex
+	@echo "$(GREEN)Creating documentation directory...$(INIT_ANSI)"
+	mkdir -p $(DOCS_DIR)/
+	@echo "$(GREEN)Moving new documentation...$(INIT_ANSI)"
+	mv html $(DOCS_DIR)/
+	mv latex $(DOCS_DIR)/
+	@echo "$(GREEN)$(BOLD)Documentation updated.$(INIT_ANSI)"
+
+# Doxyfile이 없을 경우 초기 설정을 위해 Doxyfile 생성 및 설정 변경
+$(DOXYFILE):
+	@echo "$(GREEN)Creating Doxyfile with default settings...$(INIT_ANSI)"
+	doxygen -g $(DOXYFILE)
+	@echo "$(GREEN)Applying custom settings to Doxyfile...$(INIT_ANSI)"
+	$(SED_COMMAND) 's/EXTRACT_ALL            = NO/EXTRACT_ALL            = YES/' $(DOXYFILE)
+	$(SED_COMMAND) 's/EXTRACT_PRIVATE        = NO/EXTRACT_PRIVATE        = YES/' $(DOXYFILE)
+	$(SED_COMMAND) 's/EXTRACT_STATIC         = NO/EXTRACT_STATIC         = YES/' $(DOXYFILE)
+	$(SED_COMMAND) 's/HIDE_UNDOC_MEMBERS     = YES/HIDE_UNDOC_MEMBERS     = NO/' $(DOXYFILE)
+	$(SED_COMMAND) 's/HIDE_UNDOC_CLASSES     = YES/HIDE_UNDOC_CLASSES     = NO/' $(DOXYFILE)
+	$(SED_COMMAND) 's/RECURSIVE              = NO/RECURSIVE              = YES/' $(DOXYFILE)
+	$(SED_COMMAND) 's/SOURCE_BROWSER         = NO/SOURCE_BROWSER         = YES/' $(DOXYFILE)
+	$(SED_COMMAND) 's/INLINE_SOURCES         = NO/INLINE_SOURCES         = YES/' $(DOXYFILE)
+	$(SED_COMMAND) 's/GENERATE_TREEVIEW      = NO/GENERATE_TREEVIEW      = YES/' $(DOXYFILE)
+	$(SED_COMMAND) 's/PROJECT_NAME           = "My Project"/PROJECT_NAME           = "$(PROJECT_NAME)"/' $(DOXYFILE)
+ifdef MAINPAGE
+	echo "USE_MDFILE_AS_MAINPAGE = $(MAINPAGE)" >> $(DOXYFILE);
+endif
+	@echo "$(GREEN)$(BOLD)Doxyfile is ready.$(INIT_ANSI)"
+
+# Doxygen 관련 파일들을 정리
+doxygen-clean:
+	@echo "$(GREEN)Cleaning up documentation files...$(INIT_ANSI)"
+	rm -rf $(DOCS_DIR) $(DOXYFILE) $(DOXYFILE).bak
+	@echo "$(GREEN)$(BOLD)Clean up complete.$(INIT_ANSI)"

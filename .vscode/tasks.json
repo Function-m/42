@@ -1,0 +1,33 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "cd ${fileDirname} && make clean && make EXECUTABLE=output",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "close": true, // 컴파일 에러나면 "false"로 바꿀 것
+                "reveal": "silent",
+                "panel": "shared",
+                "focus": false
+            }
+        },
+        {
+            "label": "clean",
+            "type": "shell",
+            "command": "cd ${fileDirname} && make clean EXECUTABLE=output",
+            "problemMatcher": [],
+            "presentation": {
+                "close": true,
+                "reveal": "silent",
+                "panel": "shared",
+                "focus": false
+            }
+        }
+    ]
+}
