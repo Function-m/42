@@ -1,25 +1,52 @@
 #ifndef CLAPTRAP_H
 #define CLAPTRAP_H
 
+// ANSI Escape Codes for text color
+#define ANSI_RED "\x1b[31m"
+#define ANSI_GREEN "\x1b[32m"
+#define ANSI_YELLOW "\x1b[33m"
+#define ANSI_BLUE "\x1b[34m"
+#define ANSI_MAGENTA "\x1b[35m"
+#define ANSI_CYAN "\x1b[36m"
+#define ANSI_RESET "\x1b[0m"
+
+// ANSI Escape Codes for text color with auto-reset
+#define COLOR_RED(x) "\x1b[31m" << (x) << "\x1b[0m"
+#define COLOR_GREEN(x) "\x1b[32m" << (x) << "\x1b[0m"
+#define COLOR_YELLOW(x) "\x1b[33m" << (x) << "\x1b[0m"
+#define COLOR_BLUE(x) "\x1b[34m" << (x) << "\x1b[0m"
+#define COLOR_MAGENTA(x) "\x1b[35m" << (x) << "\x1b[0m"
+#define COLOR_CYAN(x) "\x1b[36m" << (x) << "\x1b[0m"
+
 #include <string>
 
 class ClapTrap {
-protected:
-    std::string name;
-    unsigned int hitPoints;
-    unsigned int energyPoints;
-    unsigned int attackDamage;
+ private:
+  void printStatus();
 
-public:
-    ClapTrap(std::string name = "ClapTrap");
-    ClapTrap(const ClapTrap& src);
-    virtual ~ClapTrap();
+ protected:
+  std::string name;
+  unsigned int hitPoints;
+  unsigned int energyPoints;
+  unsigned int attackDamage;
 
-    ClapTrap& operator=(const ClapTrap& rhs);
+  unsigned int oldHitPoints;
+  unsigned int oldEnergyPoints;
+  unsigned int oldAttackDamage;
 
-    virtual void attack(const std::string& target);
-    void takeDamage(unsigned int amount);
-    void beRepaired(unsigned int amount);
+  void updateOldStatus();
+  void coloredValue(unsigned int currentValue, unsigned int oldValue) const;
+
+ public:
+  ClapTrap(std::string name = "CT");
+  ClapTrap(const ClapTrap& src);
+  virtual ~ClapTrap();
+
+  ClapTrap& operator=(const ClapTrap& rhs);
+
+  virtual void attack(const std::string& target);
+  void takeDamage(unsigned int amount);
+  void beRepaired(unsigned int amount);
 };
 
 #endif

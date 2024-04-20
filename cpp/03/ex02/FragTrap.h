@@ -4,14 +4,17 @@
 #include "ClapTrap.h"
 
 class FragTrap : public ClapTrap {
-public:
-    FragTrap(std::string name = "FragTrap");
-    FragTrap(const FragTrap& src);
-    ~FragTrap();
+ private:
+  void printStatus();
 
-    FragTrap& operator=(const FragTrap& rhs);
+ public:
+  FragTrap(std::string name = "FT");
+  FragTrap(const FragTrap& src);
+  ~FragTrap();
 
-    void highFivesGuys(void);
+  FragTrap& operator=(const FragTrap& rhs);
+
+  void highFivesGuys(void);
 };
 
 #endif

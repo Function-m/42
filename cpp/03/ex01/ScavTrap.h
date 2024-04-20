@@ -4,15 +4,18 @@
 #include "ClapTrap.h"
 
 class ScavTrap : public ClapTrap {
-public:
-    ScavTrap(std::string name = "ScavTrap");
-    ScavTrap(const ScavTrap& src);
-    virtual ~ScavTrap();
+ private:
+  void printStatus();
 
-    ScavTrap& operator=(const ScavTrap& rhs);
+ public:
+  ScavTrap(std::string name = "ST");
+  ScavTrap(const ScavTrap& src);
+  virtual ~ScavTrap();
 
-    void attack(const std::string& target);
-    void guardGate();
+  ScavTrap& operator=(const ScavTrap& rhs);
+
+  void attack(const std::string& target);
+  void guardGate();
 };
 
 #endif

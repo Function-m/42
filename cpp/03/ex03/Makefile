@@ -18,11 +18,7 @@ DEPENDS = $(OBJECTS:$(OBJ_DIR)/%.o=$(DEP_DIR)/%.d)
 
 # 컴파일러 설정
 CXX = c++
-CXXFLAGS = -g -Wall -Wextra -Werror -std=c++98 -I$(INCLUDE_DIR)
-ifdef ANOTHER_TEST
-CXXFLAGS += -DANOTHER_TEST
-EXECUTABLE := $(EXECUTABLE)_another_test
-endif
+CXXFLAGS = -g -Wshadow -Wall -Wextra -Werror -std=c++98 -I$(INCLUDE_DIR)
 
 # 기본 타겟 설정
 .PHONY: all clean re

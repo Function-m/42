@@ -2,6 +2,7 @@
 	// "C_Cpp.clang_format_style": "{ BasedOnStyle: LLVM, UseTab: Always, IndentWidth: 4, TabWidth: 4, BreakBeforeBraces: Attach, AccessModifierOffset: -2, ColumnLimit: 0}",
 	"C_Cpp.clang_format_style": "{ BasedOnStyle: Google, ColumnLimit: 0 }",
 	"files.associations": {
+    "iosfwd": "cpp",
     "__bit_reference": "cpp",
     "__config": "cpp",
     "__debug": "cpp",
@@ -39,7 +40,6 @@
     "initializer_list": "cpp",
     "iomanip": "cpp",
     "ios": "cpp",
-    "iosfwd": "cpp",
     "iostream": "cpp",
     "istream": "cpp",
     "iterator": "cpp",

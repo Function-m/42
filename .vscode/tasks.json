@@ -11,7 +11,7 @@
             },
             "problemMatcher": [],
             "presentation": {
-                "close": true, // 컴파일 에러나면 "false"로 바꿀 것
+                "close": false, // 컴파일 에러나면 "false"로 바꿀 것
                 "reveal": "silent",
                 "panel": "shared",
                 "focus": false

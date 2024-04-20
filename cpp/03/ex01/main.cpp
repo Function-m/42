@@ -1,21 +1,27 @@
-#include "ClapTrap.h"
-#include "ScavTrap.h"
 #include <iostream>
 
+#include "ClapTrap.h"
+#include "ScavTrap.h"
+
 int main() {
-    ClapTrap claptrap("Clappy");
-    ScavTrap scavtrap("Scavvy");
+  std::cout << "* Defalut Constructor" << std::endl;
+  ClapTrap claptrap;
+  ScavTrap scavtrap;
+  std::cout << std::endl;
 
-    std::cout << "Testing ClapTrap:" << std::endl;
-    claptrap.attack("Enemy");
-    claptrap.takeDamage(5);
-    claptrap.beRepaired(5);
+  std::cout << "* ClapTrap ACT" << std::endl;
+  claptrap.attack("Enemy");
+  claptrap.takeDamage(5);
+  claptrap.beRepaired(5);
+  std::cout << std::endl;
 
-    std::cout << "\nTesting ScavTrap:" << std::endl;
-    scavtrap.attack("Big Bad Enemy");
-    scavtrap.takeDamage(10);
-    scavtrap.beRepaired(10);
-    scavtrap.guardGate();
+  std::cout << "* ScavTrap ACT" << std::endl;
+  scavtrap.attack("Another Enemy");
+  scavtrap.takeDamage(10);
+  scavtrap.beRepaired(10);
+  scavtrap.guardGate();
+  std::cout << std::endl;
 
-    return 0;
+  std::cout << "* Destructor" << std::endl;
+  return 0;
 }
