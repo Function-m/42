@@ -6,6 +6,7 @@
 #include "AMateria.h"
 
 class AMateria;
+
 class ICharacter {
  public:
   virtual ~ICharacter() {}

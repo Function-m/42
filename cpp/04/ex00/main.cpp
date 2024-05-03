@@ -38,7 +38,7 @@ int main() {
   const WrongAnimal* wrongMeta = new WrongAnimal();
   const WrongAnimal* wrongCat = new WrongCat();
 
-  std::cout << AnsiGreen << "WrongAnimal's Type: " << AnsiReset << meta->getType() << " " << std::endl;
+  std::cout << AnsiGreen << "WrongAnimal's Type: " << AnsiReset << wrongMeta->getType() << " " << std::endl;
   std::cout << AnsiGreen << "WrongCat's Type: " << AnsiReset << wrongCat->getType()  << " " << std::endl;
 
   std::cout << AnsiYellow << "WrongAnimal makes sound: " << AnsiReset;

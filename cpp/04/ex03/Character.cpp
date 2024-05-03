@@ -9,7 +9,6 @@ Character::Character(std::string name) : name(name) {
 Character::Character(const Character& src) : name(src.name) {
   for (int i = 0; i < INVENTORY_SIZE; ++i) {
     if (src.inventory[i])
-      // this->inventory[i] = src.inventory[i]->clone();
       this->inventory[i] = src.inventory[i];
     else
       this->inventory[i] = NULL;
@@ -17,18 +16,13 @@ Character::Character(const Character& src) : name(src.name) {
 }
 
 Character::~Character() {
-  // for (int i = 0; i < INVENTORY_SIZE; ++i) {
-  //   delete this->inventory[i];
-  // }
 }
 
 Character& Character::operator=(const Character& rhs) {
   if (this != &rhs) {
     this->name = rhs.name;
     for (int i = 0; i < INVENTORY_SIZE; ++i) {
-      // delete this->inventory[i];
       if (rhs.inventory[i])
-        // this->inventory[i] = rhs.inventory[i]->clone();
         this->inventory[i] = rhs.inventory[i];
       else
         this->inventory[i] = NULL;
