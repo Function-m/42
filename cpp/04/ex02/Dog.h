@@ -1,17 +1,21 @@
 #ifndef DOG_H
 #define DOG_H
 
-#include "AAnimal.h"
+#include "Animal.h"
+#include "Brain.h"
 
-class Dog : public AAnimal {
-public:
-    Dog();
-    Dog(const Dog& src);
-    virtual ~Dog();
+class Dog : public Animal {
+ private:
+  Brain* brain;
 
-    Dog& operator=(const Dog& rhs);
+ public:
+  Dog();
+  Dog(const Dog& src);
+  ~Dog();
 
-    void makeSound() const;
+  Dog& operator=(const Dog& rhs);
+
+  void makeSound() const;
 };
 
 #endif

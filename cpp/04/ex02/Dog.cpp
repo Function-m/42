@@ -1,23 +1,29 @@
+#include <iostream>
+
 #include "Dog.h"
 
 Dog::Dog() {
-    this->type = "Dog";
-    std::cout << "Dog created." << std::endl;
+  brain = new Brain();
+  this->type = "Dog";
+  std::cout << "Dog constructed." << std::endl;
 }
 
-Dog::Dog(const Dog& src) : AAnimal(src) {
-    *this = src;
+Dog::Dog(const Dog& src) : Animal(src) {
+  brain = new Brain(*src.brain);
 }
 
 Dog::~Dog() {
-    std::cout << "Dog destroyed." << std::endl;
+  delete brain;
+  std::cout << "Dog destroyed." << std::endl;
 }
 
 Dog& Dog::operator=(const Dog& rhs) {
-    AAnimal::operator=(rhs);
-    return *this;
+  Animal::operator=(rhs);
+  if (brain != rhs.brain)
+    *brain = *rhs.brain;
+  return *this;
 }
 
 void Dog::makeSound() const {
-    std::cout << "Bark!" << std::endl;
+  std::cout << "Bark!" << std::endl;
 }

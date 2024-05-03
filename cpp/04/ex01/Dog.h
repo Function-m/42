@@ -5,17 +5,17 @@
 #include "Brain.h"
 
 class Dog : public Animal {
-private:
-    Brain* brain;
+ private:
+  Brain* brain;
 
-public:
-    Dog();
-    Dog(const Dog& src);
-    virtual ~Dog();
+ public:
+  Dog();
+  Dog(const Dog& src);
+  ~Dog();
 
-    Dog& operator=(const Dog& rhs);
+  Dog& operator=(const Dog& rhs);
 
-    virtual void makeSound() const;
+  void makeSound() const;
 };
 
 #endif

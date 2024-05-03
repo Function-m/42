@@ -1,20 +1,22 @@
-#ifndef AMATERIA_H
-#define AMATERIA_H
+#include "AMateria.h"
 
-#include <string>
+#include <iostream>
+
 #include "ICharacter.h"
 
-class AMateria {
-protected:
-    std::string type;
+AMateria::AMateria(std::string const &type) : type(type) {
+}
 
-public:
-    AMateria(std::string const & type);
-    virtual ~AMateria();
+AMateria::AMateria() {}
+AMateria::AMateria(const AMateria &src) : type(src.type) {}
+AMateria::~AMateria() {}
+AMateria &AMateria::operator=(const AMateria &rhs) {
+  if (this != &rhs)
+    type = rhs.type;
+  return *this;
+}
 
-    std::string const & getType() const; // Returns the materia type
-    virtual AMateria* clone() const = 0;
-    virtual void use(ICharacter& target);
-};
-
-#endif
+std::string const &AMateria::getType() const { return type; }
+void AMateria::use(ICharacter& target) {
+  std::cout << "AMateria::use called on " << target.getName() << " with no effect." << std::endl;
+}

@@ -1,18 +1,18 @@
-#include "Dog.h"
 #include "Cat.h"
+#include "Dog.h"
 
 int main() {
-    // AAnimal* meta = new AAnimal(); // 이제 컴파일되지 않음
-    AAnimal* j = new Dog();
-    AAnimal* i = new Cat();
+  // Animal* meta = new Animal(); // Compile Error
+  Animal* j = new Dog();
+  Animal* i = new Cat();
 
-    std::cout << j->getType() << " " << std::endl;
-    std::cout << i->getType() << " " << std::endl;
-    i->makeSound();
-    j->makeSound();
+  std::cout << j->getType() << " " << std::endl;
+  std::cout << i->getType() << " " << std::endl;
+  i->makeSound();
+  j->makeSound();
 
-    delete j;
-    delete i;
+  delete j;
+  delete i;
 
-    return 0;
+  return 0;
 }

@@ -4,18 +4,19 @@
 #include "IMateriaSource.h"
 
 class MateriaSource : public IMateriaSource {
-private:
-    AMateria* templates[4];
+ private:
+  static const int TEMPLATES_SIZE = 4;
+  AMateria* templates[TEMPLATES_SIZE];
 
-public:
-    MateriaSource();
-    MateriaSource(const MateriaSource& src);
-    virtual ~MateriaSource();
+ public:
+  MateriaSource();
+  MateriaSource(const MateriaSource& src);
+  ~MateriaSource();
 
-    MateriaSource& operator=(const MateriaSource& rhs);
+  MateriaSource& operator=(const MateriaSource& rhs);
 
-    void learnMateria(AMateria*);
-    AMateria* createMateria(std::string const & type);
+  void learnMateria(AMateria*);
+  AMateria* createMateria(std::string const& type);
 };
 
 #endif
