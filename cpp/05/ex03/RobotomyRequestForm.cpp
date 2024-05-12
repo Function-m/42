@@ -1,5 +1,7 @@
 #include "RobotomyRequestForm.h"
 
+#include <cstdlib>
+#include <ctime>
 #include <iostream>
 
 // Constructor and Destructor
