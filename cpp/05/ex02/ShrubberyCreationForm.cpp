@@ -24,7 +24,7 @@ void ShrubberyCreationForm::execute(Bureaucrat const& executor) const {
   validateIsSigned();
   validateGrade(this->getGradeToExecute(), executor.getGrade());
 
-  std::ofstream ofs(target + "_shrubbery");
+  std::ofstream ofs((target + "_shrubbery").c_str());
   if (!ofs)
     throw std::runtime_error("File could not be opened");
 
