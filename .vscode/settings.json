@@ -67,6 +67,11 @@
     "fstream": "cpp",
     "stack": "cpp",
     "__tree": "cpp",
-    "map": "cpp"
+    "map": "cpp",
+    "*.tcc": "cpp",
+    "clocale": "cpp",
+    "memory_resource": "cpp",
+    "numeric": "cpp",
+    "random": "cpp"
   }
 }
