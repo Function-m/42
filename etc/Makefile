@@ -41,7 +41,12 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 # 'make clean' 규칙
 clean:
 	@echo "\n$(GREEN)Cleaning...$(INIT_ANSI)"
-	rm -rf $(BUILD_DIR) $(EXECUTABLE) $(EXECUTABLE)_another_test
+	rm -rf $(BUILD_DIR)
+	@echo "\n$(GREEN)$(BOLD)Cleaned.$(INIT_ANSI)"
+
+fclean:
+	@echo "\n$(GREEN)FCleaning...$(INIT_ANSI)"
+	rm -rf $(BUILD_DIR) $(EXECUTABLE)
 	@echo "\n$(GREEN)$(BOLD)Cleaned.$(INIT_ANSI)"
 
 # 'make re' 규칙

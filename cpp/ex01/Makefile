@@ -4,7 +4,7 @@ GREEN       =   \033[0;32m
 INIT_ANSI   =   \033[0m     # 초기화
 
 # 실행 파일 이름
-EXECUTABLE = executable
+NAME = RPN
 
 # 소스 파일 및 오브젝트 파일 찾기 및 정의
 SRC_DIR = .
@@ -18,17 +18,17 @@ DEPENDS = $(OBJECTS:$(OBJ_DIR)/%.o=$(DEP_DIR)/%.d)
 
 # 컴파일러 설정
 CXX = c++
-CXXFLAGS = -g -Wall -Wextra -Werror -std=c++98 -fsanitize=address -I$(INCLUDE_DIR)
+CXXFLAGS = -g -Wall -Wextra -Werror -std=c++98 -I$(INCLUDE_DIR)
 
 # 기본 타겟 설정
 .PHONY: all clean re
 
 # 'make all' 또는 'make' 규칙
-all: $(EXECUTABLE)
+all: $(NAME)
 	@echo "\n$(GREEN)$(BOLD)Build complete.$(INIT_ANSI)"
 
 # 실행 파일 빌드 규칙
-$(EXECUTABLE): $(OBJECTS)
+$(NAME): $(OBJECTS)
 	@echo "\n$(GREEN)Linking...$(INIT_ANSI)"
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
@@ -41,7 +41,12 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 # 'make clean' 규칙
 clean:
 	@echo "\n$(GREEN)Cleaning...$(INIT_ANSI)"
-	rm -rf $(BUILD_DIR) $(EXECUTABLE) $(EXECUTABLE)_another_test
+	rm -rf $(BUILD_DIR)
+	@echo "\n$(GREEN)$(BOLD)Cleaned.$(INIT_ANSI)"
+
+fclean:
+	@echo "\n$(GREEN)FCleaning...$(INIT_ANSI)"
+	rm -rf $(BUILD_DIR) $(NAME)
 	@echo "\n$(GREEN)$(BOLD)Cleaned.$(INIT_ANSI)"
 
 # 'make re' 규칙
