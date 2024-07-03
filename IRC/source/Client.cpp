@@ -1,4 +1,6 @@
+
 #include "Client.hpp"
+#include "Logging.hpp"
 #include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -32,6 +34,7 @@ void Client::setNickname(const std::string& nickname) {
 
 void Client::sendMessage(const std::string& message) {
 	send(this->clientSocket, message.c_str(), message.size(), 0);
+	LOG_DEBUG("Sent message to client " + std::to_string(this->clientSocket) + ": " + message);
 }
 
 std::vector<std::string> Client::receiveMessages() {

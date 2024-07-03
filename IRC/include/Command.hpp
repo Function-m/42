@@ -1,3 +1,4 @@
+
 #ifndef COMMAND_HPP
 #define COMMAND_HPP
 
@@ -75,11 +76,15 @@ public:
 // Command factory class
 class CommandFactory {
 public:
-	CommandFactory();
-	~CommandFactory();
+	static CommandFactory& getInstance();
 	Command* getCommand(const std::string& commandName);
 
 private:
+	CommandFactory();
+	~CommandFactory();
+	CommandFactory(const CommandFactory&);
+	CommandFactory& operator=(const CommandFactory&);
+
 	std::map<std::string, Command*> commands;
 };
 

@@ -1,3 +1,4 @@
+
 #include "ClientManager.hpp"
 #include "Logging.hpp"
 
@@ -37,4 +38,11 @@ Client* ClientManager::getClient(const std::string& nickname) {
 	}
 	LOG_ERROR("Client not found with nickname: " + nickname);
 	return NULL;
+}
+
+void ClientManager::sendMessageToClient(int clientSocket, const std::string& message) {
+	Client* client = this->getClient(clientSocket);
+	if (client) {
+		client->sendMessage(message);
+	}
 }

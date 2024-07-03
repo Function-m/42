@@ -1,7 +1,10 @@
+
 #ifndef CLIENTMANAGER_HPP
 #define CLIENTMANAGER_HPP
 
 #include <map>
+#include <vector>
+#include <string>
 #include "Client.hpp"
 
 class ClientManager {
@@ -11,6 +14,7 @@ public:
 	void removeClient(int socket);
 	Client* getClient(int socket);
 	Client* getClient(const std::string& nickname);
+	void sendMessageToClient(int clientSocket, const std::string& message);
 
 private:
 	ClientManager() {}

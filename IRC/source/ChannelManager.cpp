@@ -1,4 +1,7 @@
+
 #include "ChannelManager.hpp"
+#include "ClientManager.hpp"
+#include "Client.hpp"
 
 ChannelManager& ChannelManager::getInstance() {
 	static ChannelManager instance;
@@ -13,9 +16,9 @@ Channel* ChannelManager::getChannel(const std::string& name) {
 	}
 }
 
-void ChannelManager::createChannel(const std::string& name) {
+void ChannelManager::createChannel(const std::string& name, Client* creator) {
 	if (this->channels.find(name) == this->channels.end()) {
-		this->channels[name] = new Channel(name);
+		this->channels[name] = new Channel(name, creator);
 	}
 }
 

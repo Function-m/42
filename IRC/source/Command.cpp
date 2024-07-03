@@ -1,3 +1,4 @@
+
 #include "Command.hpp"
 #include "Logging.hpp"
 #include <sys/socket.h>
@@ -11,7 +12,7 @@
 // NICK command class implementation
 void NickCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 2) {
-		send(clientSocket, "ERROR: Nickname required\n", 24, 0);
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: Nickname required\n");
 		return;
 	}
 	std::string nickname = args[1];
@@ -25,30 +26,29 @@ void NickCommand::execute(int clientSocket, const std::vector<std::string>& args
 // USER command class implementation
 void UserCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 5) {
-		send(clientSocket, "ERROR: USER command requires 4 parameters\n", 41, 0);
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: USER command requires 4 parameters\n");
 		return;
 	}
-	// Handle USER command
 	LOG_INFO("USER command received from client " + std::to_string(clientSocket));
 }
 
 // JOIN command class implementation
 void JoinCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 2 || args[1].empty()) {
-		send(clientSocket, "ERROR: Channel name required\n", 29, 0);
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: Channel name required\n");
 		LOG_ERROR("JOIN command received with no channel name from client " + std::to_string(clientSocket));
 		return;
 	}
 	std::string channelName = args[1];
 	ChannelManager& channelManager = ChannelManager::getInstance();
 	Channel* channel = channelManager.getChannel(channelName);
+	Client* client = ClientManager::getInstance().getClient(clientSocket);
 	if (!channel) {
-		channelManager.createChannel(channelName);
+		channelManager.createChannel(channelName, client);
 		channel = channelManager.getChannel(channelName);
 		LOG_INFO("Channel created: " + channelName);
 	}
 	channel->addClient(clientSocket);
-	Client* client = ClientManager::getInstance().getClient(clientSocket);
 	if (client) {
 		std::string joinMessage = client->getNickname() + " has joined the channel\n";
 		channel->broadcastMessage(joinMessage, clientSocket);
@@ -59,7 +59,9 @@ void JoinCommand::execute(int clientSocket, const std::vector<std::string>& args
 // PART command class implementation
 void PartCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 2) {
-		send(clientSocket, "ERROR: Channel name required\n", 29, 0);
+
+
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: Channel name required\n");
 		return;
 	}
 	std::string channelName = args[1];
@@ -78,7 +80,7 @@ void PartCommand::execute(int clientSocket, const std::vector<std::string>& args
 // PRIVMSG command class implementation
 void PrivmsgCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 3) {
-		send(clientSocket, "ERROR: Recipient and message required\n", 38, 0);
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: Recipient and message required\n");
 		return;
 	}
 	std::string recipient = args[1];
@@ -97,13 +99,17 @@ void PrivmsgCommand::execute(int clientSocket, const std::vector<std::string>& a
 // KICK command class implementation
 void KickCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 3) {
-		send(clientSocket, "ERROR: User to kick and reason required\n", 40, 0);
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: User to kick and reason required\n");
 		return;
 	}
 	std::string channelName = args[1];
 	std::string userToKick = args[2];
 	Channel* channel = ChannelManager::getInstance().getChannel(channelName);
 	if (channel) {
+		if (!channel->isOperator(clientSocket)) {
+			ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: You are not an operator\n");
+			return;
+		}
 		Client* kickClient = ClientManager::getInstance().getClient(userToKick);
 		if (kickClient) {
 			channel->removeClient(kickClient->getSocket());
@@ -120,29 +126,40 @@ void KickCommand::execute(int clientSocket, const std::vector<std::string>& args
 // INVITE command class implementation
 void InviteCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 3) {
-		send(clientSocket, "ERROR: User to invite and channel name required\n", 48, 0);
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: User to invite and channel name required\n");
 		return;
 	}
 	std::string userToInvite = args[1];
 	std::string channelName = args[2];
-	Client* inviteClient = ClientManager::getInstance().getClient(userToInvite);
-	if (inviteClient) {
-		std::string inviteMessage = "You have been invited to join " + channelName + "\n";
-		inviteClient->sendMessage(inviteMessage);
-		LOG_INFO("Client " + std::to_string(clientSocket) + " invited " + userToInvite + " to channel " + channelName);
+	Channel* channel = ChannelManager::getInstance().getChannel(channelName);
+	if (channel) {
+		if (!channel->isOperator(clientSocket)) {
+			ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: You are not an operator\n");
+			return;
+		}
+		Client* inviteClient = ClientManager::getInstance().getClient(userToInvite);
+		if (inviteClient) {
+			std::string inviteMessage = "You have been invited to join " + channelName + "\n";
+			inviteClient->sendMessage(inviteMessage);
+			LOG_INFO("Client " + std::to_string(clientSocket) + " invited " + userToInvite + " to channel " + channelName);
+		}
 	}
 }
 
 // TOPIC command class implementation
 void TopicCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 3) {
-		send(clientSocket, "ERROR: Channel name and topic required\n", 40, 0);
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: Channel name and topic required\n");
 		return;
 	}
 	std::string channelName = args[1];
 	std::string topic = args[2];
 	Channel* channel = ChannelManager::getInstance().getChannel(channelName);
 	if (channel) {
+		if (!channel->isOperator(clientSocket)) {
+			ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: You are not an operator\n");
+			return;
+		}
 		std::string topicMessage = "Topic for " + channelName + " set to: " + topic + "\n";
 		channel->broadcastMessage(topicMessage, -1);
 		LOG_INFO("Topic for channel " + channelName + " set to: " + topic);
@@ -152,40 +169,54 @@ void TopicCommand::execute(int clientSocket, const std::vector<std::string>& arg
 // MODE command class implementation
 void ModeCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 3) {
-		send(clientSocket, "ERROR: Channel name and mode required\n", 37, 0);
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: Channel name and mode required\n");
 		return;
 	}
-	// Mode implementation can vary depending on requirements
-	std::string modeMessage = "Mode command executed\n";
-	send(clientSocket, modeMessage.c_str(), modeMessage.size(), 0);
-	LOG_INFO("Mode command executed by client " + std::to_string(clientSocket));
+	std::string channelName = args[1];
+	Channel* channel = ChannelManager::getInstance().getChannel(channelName);
+	if (channel) {
+		if (!channel->isOperator(clientSocket)) {
+			ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: You are not an operator\n");
+			return;
+		}
+		std::string modeMessage = "Mode command executed\n";
+		ClientManager::getInstance().sendMessageToClient(clientSocket, modeMessage);
+		LOG_INFO("Mode command executed by client " + std::to_string(clientSocket));
+	}
 }
 
 // CAP command class implementation
 void CapCommand::execute(int clientSocket, const std::vector<std::string>& args) {
-	if (args.size() < 2) {
-		send(clientSocket, "ERROR: CAP command requires parameters\n", 40, 0);
+	if (args.size() < 1) {
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: CAP command requires parameters\r\n");
 		return;
 	}
-	std::string subCommand = args[1];
+	std::string subCommand = args[0];
 	std::ostringstream response;
-	response << "CAP " << subCommand;
 
 	if (subCommand == "LS") {
-		response << " multi-prefix sasl\n";
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "CAP * LS :\r\n");
 	} else if (subCommand == "REQ") {
-		response << " ACK :" << args[2] << "\n";
+		if (args.size() < 3) {
+			ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: CAP REQ requires parameters\r\n");
+			return;
+		}
+		std::string reqParams = args[1];
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "CAP * NAK :" + reqParams + "\r\n");
 	} else if (subCommand == "END") {
-		response << " END\n";
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "CAP END\r\n");
 	} else {
-		response << " ERROR :Unknown CAP subcommand\n";
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "CAP * ERROR :Unknown CAP subcommand\r\n");
 	}
 
-	send(clientSocket, response.str().c_str(), response.str().size(), 0);
 	LOG_INFO("CAP command executed: " + subCommand + " by client " + std::to_string(clientSocket));
 }
 
-// Command factory class implementation
+CommandFactory& CommandFactory::getInstance() {
+	static CommandFactory instance;
+	return instance;
+}
+
 CommandFactory::CommandFactory() {
 	this->commands["NICK"] = new NickCommand();
 	this->commands["USER"] = new UserCommand();

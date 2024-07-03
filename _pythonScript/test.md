@@ -1,241 +1,22 @@
-## ../IRC/Makefile
-``` Maekefile
-# 글자 ANSI 정의
-BOLD        =   \033[1m
-GREEN       =   \033[0;32m
-INIT_ANSI   =   \033[0m     # 초기화
+### 42/IRC/include/ClientManager.hpp
 
-# 실행 파일 이름
-NAME = ircserv
-DEBUG_NAME = ircserv_debug
-
-# 소스 파일 및 오브젝트 파일 찾기 및 정의
-SRC_DIR = source
-INCLUDE_DIR = include
-BUILD_DIR = build
-OBJ_DIR = $(BUILD_DIR)/objs
-DEP_DIR = $(BUILD_DIR)/deps
-SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
-OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
-DEBUG_OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/debug_%.o)
-DEPENDS = $(OBJECTS:$(OBJ_DIR)/%.o=$(DEP_DIR)/%.d)
-DEBUG_DEPENDS = $(DEBUG_OBJECTS:$(OBJ_DIR)/debug_%.o=$(DEP_DIR)/debug_%.d)
-
-# 컴파일러 설정
-CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -I$(INCLUDE_DIR)
-DEBUG_CXXFLAGS = $(CXXFLAGS) -DENABLE_DEBUG -g
-
-# 기본 타겟 설정
-.PHONY: all clean fclean re debug
-
-# 'make all' 또는 'make' 규칙
-all: $(NAME)
-	@echo "\n$(GREEN)$(BOLD)Build complete.$(INIT_ANSI)"
-
-# 실행 파일 빌드 규칙
-$(NAME): $(OBJECTS)
-	@echo "\n$(GREEN)Linking...$(INIT_ANSI)"
-	$(CXX) $(CXXFLAGS) -o $@ $^
-
-# 디버그 빌드 규칙
-debug: $(DEBUG_NAME)
-	@echo "\n$(GREEN)$(BOLD)Debug build complete.$(INIT_ANSI)"
-
-# 디버그 실행 파일 빌드 규칙
-$(DEBUG_NAME): $(DEBUG_OBJECTS)
-	@echo "\n$(GREEN)Linking debug build...$(INIT_ANSI)"
-	$(CXX) $(DEBUG_CXXFLAGS) -o $@ $^
-
-# 오브젝트 파일 및 의존성 파일 빌드 규칙
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@echo "\n$(GREEN)Compiling $< and generating dependencies...$(INIT_ANSI)"
-	@mkdir -p $(OBJ_DIR) $(DEP_DIR)
-	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@ -MF $(DEP_DIR)/$*.d
-
-# 디버그 오브젝트 파일 및 의존성 파일 빌드 규칙
-$(OBJ_DIR)/debug_%.o: $(SRC_DIR)/%.cpp
-	@echo "\n$(GREEN)Compiling $< for debug and generating dependencies...$(INIT_ANSI)"
-	@mkdir -p $(OBJ_DIR) $(DEP_DIR)
-	$(CXX) $(DEBUG_CXXFLAGS) -MMD -MP -c $< -o $@ -MF $(DEP_DIR)/debug_$*.d
-
-# 'make clean' 규칙
-clean:
-	@echo "\n$(GREEN)Cleaning...$(INIT_ANSI)"
-	rm -rf $(BUILD_DIR)
-	@echo "\n$(GREEN)$(BOLD)Cleaned.$(INIT_ANSI)"
-
-# 'make fclean' 규칙
-fclean:
-	@echo "\n$(GREEN)FCleaning...$(INIT_ANSI)"
-	rm -rf $(BUILD_DIR) $(NAME) $(DEBUG_NAME)
-	@echo "\n$(GREEN)$(BOLD)Cleaned.$(INIT_ANSI)"
-
-# 'make re' 규칙
-re:
-	$(MAKE) clean
-	$(MAKE) all
-
-# 의존성 파일 포함
--include $(DEPENDS)
--include $(DEBUG_DEPENDS)
-
-```
-## ../IRC/README.md
-```markdown
-# IRC Server Project
-
-## 프로젝트 설명
-이 프로젝트는 C++98을 사용하여 IRC(Internet Relay Chat) 서버를 구현하는 것입니다. 이 서버는 여러 클라이언트가 동시에 접속하여 실시간으로 메시지를 주고받을 수 있도록 합니다. 프로젝트는 싱글톤 패턴, 커맨드 패턴, 팩토리 패턴 등의 디자인 패턴을 사용하여 구조화되었습니다.
-
-## 파일 구조
-```
-project_root/
-├── include/
-│   ├── IRCServer.hpp
-│   ├── Command.hpp
-│   └── Client.hpp
-├── source/
-│   ├── main.cpp
-│   ├── IRCServer.cpp
-│   ├── Command.cpp
-│   └── Client.cpp
-├── Makefile
-└── README.md
-```
-
-## 설치 및 빌드 방법
-
-### 요구 사항
-- c++ 컴파일러
-- make
-
-### 빌드
-1. 프로젝트 루트 디렉토리에서 `make` 명령을 실행하여 프로젝트를 빌드합니다.
-    ```sh
-    make
-    ```
-
-2. 빌드가 완료되면 `ircserv` 실행 파일이 생성됩니다.
-
-### 클린 빌드
-1. `make clean` 명령을 실행하여 생성된 객체 파일과 실행 파일을 삭제합니다.
-    ```sh
-    make clean
-    ```
-
-2. 필요시 `make fclean` 명령을 실행하여 모든 빌드 파일을 삭제하고 완전한 클린 빌드를 수행합니다.
-    ```sh
-    make fclean
-    ```
-
-3. `make re` 명령을 실행하여 클린 빌드 후 다시 빌드합니다.
-    ```sh
-    make re
-    ```
-
-## 사용 방법
-1. 서버를 실행합니다.
-    ```sh
-    ./ircserv <port> <password>
-    ```
-
-    - `<port>`: 서버가 수신할 포트 번호.
-    - `<password>`: 클라이언트가 서버에 연결할 때 필요한 비밀번호.
-
-2. 클라이언트가 서버에 연결하여 다양한 IRC 명령어를 사용할 수 있습니다.
-    - 예: `NICK`, `USER`, `JOIN`, `PART`, `PRIVMSG`, `QUIT`
-
-## 지원되는 명령어
-### 클라이언트 명령어 (모든 사용자가 사용할 수 있는 명령어)
-- `NICK <nickname>`: 클라이언트의 닉네임을 설정합니다.
-- `USER <username> <hostname> <servername> <realname>`: 클라이언트의 사용자 정보를 설정합니다.
-- `JOIN <channel>`: 지정된 채널에 참여합니다.
-- `PART <channel>`: 지정된 채널에서 나갑니다.
-- `PRIVMSG <recipient> :<message>`: 수신자에게 개인 메시지를 보냅니다. 수신자는 유저 또는 채널일 수 있습니다.
-- `QUIT [<message>]`: 서버 연결을 종료합니다. 선택적으로 종료 메시지를 보낼 수 있습니다.
-### 오퍼레이터 명령어 (관리자 권한이 필요한 명령어)
-- `KICK <channel> <user> [<comment>]`: 지정된 채널에서 유저를 강퇴합니다. 선택적으로 강퇴 사유를 입력할 수 있습니다.
-- `INVITE <nickname> <channel>`: 유저를 채널에 초대합니다.
-- `TOPIC <channel> [<topic>]`: 채널의 주제를 설정하거나 조회합니다.
-- `MODE <channel> <mode> [<params>]`: 채널의 모드를 설정합니다.
-
----
-
-## 사용된 함수
-### 함수 분류
-
-IRC 서버 프로젝트에서 사용할 함수들을 용도에 따라 분류하면 다음과 같습니다:
-
-#### 1. 소켓 관련 함수
-이 함수들은 네트워크 소켓의 생성, 바인딩, 연결 및 수락을 담당합니다.
-
-- **socket**: 네트워크 통신에 사용할 소켓을 생성합니다.
-- **bind**: 소켓에 로컬 주소를 할당합니다.
-- **listen**: 소켓을 수신 대기 상태로 만듭니다.
-- **accept**: 대기 중인 연결을 수락합니다.
-- **connect**: 소켓을 원격 호스트에 연결합니다.
-- **setsockopt**: 소켓 옵션을 설정합니다.
-- **getsockname**: 소켓의 로컬 주소를 가져옵니다.
-
-#### 2. 데이터 전송 및 수신 함수
-이 함수들은 소켓을 통해 데이터를 보내고 받는 역할을 합니다.
-
-- **send**: 소켓을 통해 데이터를 보냅니다.
-- **recv**: 소켓을 통해 데이터를 받습니다.
-- **inet_addr**: IP 주소 문자열을 네트워크 바이트 순서의 32비트 주소로 변환합니다.
-- **inet_ntoa**: 네트워크 바이트 순서의 32비트 주소를 IP 주소 문자열로 변환합니다.
-
-#### 3. 주소 및 호스트 관련 함수
-이 함수들은 네트워크 주소 및 호스트 정보를 다룹니다.
-
-- **getprotobyname**: 프로토콜 이름으로 프로토콜 엔트리를 찾습니다.
-- **gethostbyname**: 호스트 이름으로 호스트 엔트리를 찾습니다.
-- **getaddrinfo**: 호스트 이름과 서비스 이름을 IP 주소와 포트 번호로 변환합니다.
-- **freeaddrinfo**: getaddrinfo 함수로 할당된 메모리를 해제합니다.
-
-#### 4. 바이트 순서 변환 함수
-이 함수들은 바이트 순서를 변환합니다.
-
-- **htons**: 호스트 바이트 순서에서 네트워크 바이트 순서로 16비트 값을 변환합니다.
-- **htonl**: 호스트 바이트 순서에서 네트워크 바이트 순서로 32비트 값을 변환합니다.
-- **ntohs**: 네트워크 바이트 순서에서 호스트 바이트 순서로 16비트 값을 변환합니다.
-- **ntohl**: 네트워크 바이트 순서에서 호스트 바이트 순서로 32비트 값을 변환합니다.
-
-#### 5. 멀티플렉싱 함수
-이 함수들은 여러 파일 디스크립터의 상태를 동시에 검사하여 I/O 이벤트를 처리합니다.
-
-- **poll**: 여러 파일 디스크립터의 이벤트를 모니터링합니다.
-- **select**: 여러 파일 디스크립터의 이벤트를 모니터링합니다.
-- **kqueue**: (FreeBSD, macOS) 여러 이벤트를 모니터링합니다.
-- **epoll**: (Linux) 여러 파일 디스크립터의 이벤트를 모니터링합니다.
-
-#### 6. 시스템 관련 함수
-이 함수들은 시스템 레벨의 작업을 처리합니다.
-
-- **close**: 파일 디스크립터를 닫습니다.
-- **signal**: 신호 핸들러를 설정합니다.
-- **sigaction**: 신호에 대한 동작을 정의합니다.
-- **lseek**: 파일 내 위치를 설정합니다.
-- **fstat**: 파일의 상태 정보를 얻습니다.
-- **fcntl**: 파일 디스크립터의 동작을 변경합니다.
-
-```
-## ../IRC/include/ClientManager.hpp
-```c++
+```cpp
 #ifndef CLIENTMANAGER_HPP
 #define CLIENTMANAGER_HPP
 
 #include <map>
+#include <vector>
+#include <string>
 #include "Client.hpp"
 
 class ClientManager {
 public:
 	static ClientManager& getInstance();
-	void addClient(int socket, Client* client);
+	void addClient(int socket);
 	void removeClient(int socket);
 	Client* getClient(int socket);
 	Client* getClient(const std::string& nickname);
+	void sendMessageToClient(int clientSocket, const std::string& message);
 
 private:
 	ClientManager() {}
@@ -246,37 +27,45 @@ private:
 };
 
 #endif // CLIENTMANAGER_HPP
-
 ```
-## ../IRC/include/Channel.hpp
-```c++
+
+### 42/IRC/include/Channel.hpp
+
+```cpp
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
 #include <string>
 #include <vector>
+#include <map>
 #include "Client.hpp"
 
 class Channel {
 public:
-	Channel(const std::string& name);
+	Channel(const std::string& name, Client* creator);
 	~Channel();
 
 	std::string getName() const;
 	void addClient(int clientSocket);
 	void removeClient(int clientSocket);
 	void broadcastMessage(const std::string& message, int senderSocket);
+	bool isOperator(int clientSocket) const;
+	void addOperator(int clientSocket);
+	void removeOperator(int clientSocket);
+	void handleOperatorLeft();
 
 private:
 	std::string channelName;
 	std::vector<int> clientSockets;
+	std::map<int, bool> operators;
 };
 
 #endif // CHANNEL_HPP
-
 ```
-## ../IRC/include/ChannelManager.hpp
-```c++
+
+### 42/IRC/include/ChannelManager.hpp
+
+```cpp
 #ifndef CHANNELMANAGER_HPP
 #define CHANNELMANAGER_HPP
 
@@ -284,11 +73,13 @@ private:
 #include <string>
 #include "Channel.hpp"
 
+class Client;
+
 class ChannelManager {
 public:
 	static ChannelManager& getInstance();
 	Channel* getChannel(const std::string& name);
-	void createChannel(const std::string& name);
+	void createChannel(const std::string& name, Client* creator);
 	void removeChannel(const std::string& name);
 
 private:
@@ -300,25 +91,11 @@ private:
 };
 
 #endif // CHANNELMANAGER_HPP
-
 ```
-## ../IRC/include/_Debug.hpp
-```c++
-#ifndef _DEBUG_HPP
-#define _DEBUG_HPP
 
-#ifdef ENABLE_DEBUG
-#include <iostream>
-#define  LOG(message) std::cout << "\x1b[36m[LOG] \x1b[0m " << message << std::endl
-#else
-#define LOG(message)
-#endif
+### 42/IRC/include/Command.hpp
 
-#endif // _DEBUG_HPP
-
-```
-## ../IRC/include/Command.hpp
-```c++
+```cpp
 #ifndef COMMAND_HPP
 #define COMMAND_HPP
 
@@ -387,22 +164,33 @@ public:
 	void execute(int clientSocket, const std::vector<std::string>& args);
 };
 
+// CAP command class
+class CapCommand : public Command {
+public:
+	void execute(int clientSocket, const std::vector<std::string>& args);
+};
+
 // Command factory class
 class CommandFactory {
 public:
-	CommandFactory();
-	~CommandFactory();
+	static CommandFactory& getInstance();
 	Command* getCommand(const std::string& commandName);
 
 private:
+	CommandFactory();
+	~CommandFactory();
+	CommandFactory(const CommandFactory&);
+	CommandFactory& operator=(const CommandFactory&);
+
 	std::map<std::string, Command*> commands;
 };
 
 #endif // COMMAND_HPP
-
 ```
-## ../IRC/include/IRCServer.hpp
-```c++
+
+### 42/IRC/include/IRCServer.hpp
+
+```cpp
 #ifndef IRCSERVER_HPP
 #define IRCSERVER_HPP
 
@@ -414,7 +202,7 @@ private:
 class IRCServer {
 public:
 	static IRCServer& getInstance();
-	void start(int port, const std::string& password);
+	void run(int port, const std::string& password);
 	void stop();
 	int getServerSocket() const;
 	void setServerSocket(int socket);
@@ -435,10 +223,11 @@ private:
 };
 
 #endif // IRCSERVER_HPP
-
 ```
-## ../IRC/include/Client.hpp
-```c++
+
+### 42/IRC/include/Client.hpp
+
+```cpp
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
@@ -465,76 +254,95 @@ private:
 };
 
 #endif // CLIENT_HPP
-
 ```
-## ../IRC/source/IRCServer.cpp
-```c++
+
+### 42/IRC/include/Logging.hpp
+
+```cpp
+#ifndef _DEBUG_HPP
+#define _DEBUG_HPP
+
+#include <iostream>
+
+#ifdef ENABLE_DEBUG
+#define LOG_DEBUG(message) std::cout << "\x1b[36m[DEBUG] \x1b[0m" << message << std::endl
+#else
+#define LOG_DEBUG(message)
+#endif
+
+#define LOG_INFO(message)  std::cout << "\x1b[32m[INFO]  \x1b[0m" << message << std::endl
+#define LOG_ERROR(message) std::cerr << "\x1b[31m[ERROR] \x1b[0m" << message << std::endl
+
+#endif // _DEBUG_HPP
+```
+
+### 42/IRC/source/IRCServer.cpp
+
+```cpp
 #include "IRCServer.hpp"
-#include "_Debug.hpp"
+
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <sstream>
-#include <fcntl.h>
-#include <stdexcept>
-#include "ClientManager.hpp"
-#include "ChannelManager.hpp"
-#include "Command.hpp"
 
-IRCServer& IRCServer::getInstance() {
+#include <sstream>
+#include <stdexcept>
+
+#include "ChannelManager.hpp"
+#include "ClientManager.hpp"
+#include "Command.hpp"
+#include "Logging.hpp"
+
+IRCServer &IRCServer::getInstance() {
 	static IRCServer instance;
 	return instance;
 }
 
-void IRCServer::start(int port, const std::string& password) {
-	try {
-		this->serverPassword = password;
-		this->serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-		if (this->serverSocket < 0) {
-			throw std::runtime_error("Socket creation failed");
+void IRCServer::run(int port, const std::string &password) {
+	this->serverPassword = password;
+	this->serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (this->serverSocket < 0) {
+		throw std::runtime_error("Socket creation failed");
+	}
+	LOG_INFO("Socket created successfully");
+
+	sockaddr_in serverAddr;
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_port = htons(port);
+	serverAddr.sin_addr.s_addr = INADDR_ANY;
+
+	if (bind(this->serverSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
+		throw std::runtime_error("Socket binding failed");
+	}
+	LOG_INFO("Socket bound to port " + std::to_string(port));
+
+	if (listen(this->serverSocket, 5) < 0) {
+		throw std::runtime_error("Socket listening failed");
+	}
+	LOG_INFO("Socket is listening");
+
+	struct pollfd pfd;
+	pfd.fd = this->serverSocket;
+	pfd.events = POLLIN;
+	this->pollfds.push_back(pfd);
+
+	LOG_INFO("IRC server started on port " + std::to_string(port));
+
+	while (true) {
+		int pollCount = poll(&this->pollfds[0], this->pollfds.size(), -1);
+		if (pollCount < 0) {
+			throw std::runtime_error("Poll failed");
 		}
-		LOG("Socket created successfully");
 
-		sockaddr_in serverAddr;
-		serverAddr.sin_family = AF_INET;
-		serverAddr.sin_port = htons(port);
-		serverAddr.sin_addr.s_addr = INADDR_ANY;
-
-		if (bind(this->serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
-			throw std::runtime_error("Socket binding failed");
-		}
-		LOG("Socket bound to port");
-
-		if (listen(this->serverSocket, 5) < 0) {
-			throw std::runtime_error("Socket listening failed");
-		}
-		LOG("Socket is listening");
-
-		struct pollfd pfd;
-		pfd.fd = this->serverSocket;
-		pfd.events = POLLIN;
-		this->pollfds.push_back(pfd);
-
-		LOG("IRC server started on port " + std::to_string(port));
-
-		while (true) {
-			int pollCount = poll(&this->pollfds[0], this->pollfds.size(), -1);
-			if (pollCount < 0) {
-				throw std::runtime_error("Poll failed");
-			}
-
-			for (size_t i = 0; i < this->pollfds.size(); ++i) {
-				if (this->pollfds[i].revents & POLLIN) {
-					if (this->pollfds[i].fd == this->serverSocket) {
-						this->acceptNewClient();
-					} else {
-						this->processClientMessage(this->pollfds[i].fd);
-					}
+		for (size_t i = 0; i < this->pollfds.size(); ++i) {
+			if (this->pollfds[i].revents & POLLIN) {
+				if (this->pollfds[i].fd == this->serverSocket) {
+					this->acceptNewClient();
+				} else {
+					this->processClientMessage(this->pollfds[i].fd);
 				}
 			}
 		}
-	} catch (const std::exception& e) {
-		std::cerr << "Exception occurred while running the server: " << e.what() << std::endl;
-		this->stop();
 	}
 }
 
@@ -542,7 +350,7 @@ void IRCServer::stop() {
 	close(this->serverSocket);
 	ClientManager::getInstance().~ClientManager();
 	this->pollfds.clear();
-	LOG("Server stopped");
+	LOG_INFO("Server stopped");
 }
 
 void IRCServer::acceptNewClient() {
@@ -552,28 +360,29 @@ void IRCServer::acceptNewClient() {
 			throw std::runtime_error("Client connection acceptance failed");
 		}
 
-		Client* client = new Client(clientSocket);
-		ClientManager::getInstance().addClient(clientSocket, client);
+		ClientManager::getInstance().addClient(clientSocket);
 
 		struct pollfd pfd;
 		pfd.fd = clientSocket;
 		pfd.events = POLLIN;
 		this->pollfds.push_back(pfd);
 
-		LOG("New client connected with socket: " + std::to_string(clientSocket));
-	} catch (const std::exception& e) {
-		std::cerr << "Exception occurred while accepting a client: " << e.what() << std::endl;
+		LOG_INFO("New client connected with socket: " + std::to_string(clientSocket));
+	} catch (const std::exception &e) {
+		LOG_ERROR("Exception occurred while accepting a client: " + std::string(e.what()));
 	}
 }
 
 void IRCServer::processClientMessage(int clientSocket) {
-	Client* client = ClientManager::getInstance().getClient(clientSocket);
-	CommandFactory commandFactory;
+	Client *client = ClientManager::getInstance().getClient(clientSocket);
+	CommandFactory &commandFactory = CommandFactory::getInstance();
 
 	try {
 		std::vector<std::string> messages = client->receiveMessages();
-		for (std::vector<std::string>::iterator it = messages.begin(); it != messages.end(); ++it) {
-			LOG("Received from client " + std::to_string(clientSocket) + ": " + *it);
+		for
+
+ (std::vector<std::string>::iterator it = messages.begin(); it != messages.end(); ++it) {
+			LOG_DEBUG("Received from client " + std::to_string(clientSocket) + ": " + *it);
 			std::istringstream iss(*it);
 			std::string commandName;
 			std::vector<std::string> args;
@@ -584,16 +393,18 @@ void IRCServer::processClientMessage(int clientSocket) {
 				args.push_back(arg);
 			}
 
-			Command* command = commandFactory.getCommand(commandName);
+			Command *command = commandFactory.getCommand(commandName);
 			if (command) {
-				LOG("Executing command: " + commandName + " from client: " + std::to_string(clientSocket));
+				LOG_DEBUG("Executing command: " + commandName + " from client: " + std::to_string(clientSocket));
 				command->execute(clientSocket, args);
 			} else {
-				client->sendMessage("ERROR: Unknown command\n");
+				std::string errorMsg = "ERROR: Unknown command: " + commandName;
+				ClientManager::getInstance().sendMessageToClient(clientSocket, errorMsg);
+				LOG_ERROR("Unknown command received from client " + std::to_string(clientSocket) + ": " + commandName);
 			}
 		}
-	} catch (const std::exception& e) {
-		std::cerr << "Exception occurred while handling a client: " << e.what() << std::endl;
+	} catch (const std::exception &e) {
+		LOG_ERROR("Exception occurred while handling a client: " + std::string(e.what()));
 		close(clientSocket);
 		this->removeClient(clientSocket);
 	}
@@ -608,7 +419,7 @@ void IRCServer::removeClient(int clientSocket) {
 			break;
 		}
 	}
-	LOG("Client removed: " + std::to_string(clientSocket));
+	LOG_INFO("Client removed: " + std::to_string(clientSocket));
 }
 
 int IRCServer::getServerSocket() const {
@@ -623,13 +434,14 @@ std::string IRCServer::getServerPassword() const {
 	return this->serverPassword;
 }
 
-void IRCServer::setServerPassword(const std::string& password) {
+void IRCServer::setServerPassword(const std::string &password) {
 	this->serverPassword = password;
 }
-
 ```
-## ../IRC/source/Client.cpp
-```c++
+
+### 42/IRC/source/Client.cpp
+
+```cpp
 #include "Client.hpp"
 #include <sys/socket.h>
 #include <unistd.h>
@@ -691,15 +503,20 @@ std::vector<std::string> Client::receiveMessages() {
 	}
 	return messages;
 }
-
 ```
-## ../IRC/source/Channel.cpp
-```c++
+
+### 42/IRC/source/Channel.cpp
+
+```cpp
 #include "Channel.hpp"
 #include <algorithm>
 #include "ClientManager.hpp"
+#include "ChannelManager.hpp"
 
-Channel::Channel(const std::string& name) : channelName(name) {}
+Channel::Channel(const std::string& name, Client* creator) : channelName(name) {
+	addClient(creator->getSocket());
+	addOperator(creator->getSocket());
+}
 
 Channel::~Channel() {}
 
@@ -713,6 +530,12 @@ void Channel::addClient(int clientSocket) {
 
 void Channel::removeClient(int clientSocket) {
 	this->clientSockets.erase(std::remove(this->clientSockets.begin(), this->clientSockets.end(), clientSocket), this->clientSockets.end());
+	removeOperator(clientSocket);
+	if (this->clientSockets.empty()) {
+		ChannelManager::getInstance().removeChannel(this->channelName);
+	} else if (this->operators.empty()) {
+		handleOperatorLeft();
+	}
 }
 
 void Channel::broadcastMessage(const std::string& message, int senderSocket) {
@@ -727,10 +550,32 @@ void Channel::broadcastMessage(const std::string& message, int senderSocket) {
 	}
 }
 
+bool Channel::isOperator(int clientSocket) const {
+	std::map<int, bool>::const_iterator it = this->operators.find(clientSocket);
+	return it != this->operators.end() && it->second;
+}
+
+void Channel::addOperator(int clientSocket) {
+	this->operators[clientSocket] = true;
+}
+
+void Channel::removeOperator(int clientSocket) {
+	this->operators.erase(clientSocket);
+}
+
+void Channel::handleOperatorLeft() {
+	if (!this->clientSockets.empty()) {
+		addOperator(this->clientSockets.front());
+	}
+}
 ```
-## ../IRC/source/ChannelManager.cpp
-```c++
+
+### 42/IRC/source/ChannelManager.cpp
+
+```cpp
 #include "ChannelManager.hpp"
+#include "ClientManager.hpp"
+#include "Client.hpp"
 
 ChannelManager& ChannelManager::getInstance() {
 	static ChannelManager instance;
@@ -745,9 +590,9 @@ Channel* ChannelManager::getChannel(const std::string& name) {
 	}
 }
 
-void ChannelManager::createChannel(const std::string& name) {
+void ChannelManager::createChannel(const std::string& name, Client* creator) {
 	if (this->channels.find(name) == this->channels.end()) {
-		this->channels[name] = new Channel(name);
+		this->channels[name] = new Channel(name, creator);
 	}
 }
 
@@ -757,12 +602,13 @@ void ChannelManager::removeChannel(const std::string& name) {
 		this->channels.erase(name);
 	}
 }
-
 ```
-## ../IRC/source/Command.cpp
-```c++
+
+### 42/IRC/source/Command.cpp
+
+```cpp
 #include "Command.hpp"
-#include "_Debug.hpp"
+#include "Logging.hpp"
 #include <sys/socket.h>
 #include <unistd.h>
 #include <sstream>
@@ -774,54 +620,56 @@ void ChannelManager::removeChannel(const std::string& name) {
 // NICK command class implementation
 void NickCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 2) {
-		send(clientSocket, "ERROR: Nickname required\n", 24, 0);
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: Nickname required\n");
 		return;
 	}
 	std::string nickname = args[1];
 	Client* client = ClientManager::getInstance().getClient(clientSocket);
 	if (client) {
 		client->setNickname(nickname);
-		LOG("Client " + std::to_string(clientSocket) + " set nickname to " + nickname);
+		LOG_INFO("Client " + std::to_string(clientSocket) + " set nickname to " + nickname);
 	}
 }
 
 // USER command class implementation
 void UserCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 5) {
-		send(clientSocket, "ERROR: USER command requires 4 parameters\n", 41, 0);
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: USER command requires 4 parameters\n");
 		return;
 	}
-	// Handle USER command
-	LOG("USER command received from client " + std::to_string(clientSocket));
+	LOG_INFO("USER command received from client " + std::to_string(clientSocket));
 }
 
 // JOIN command class implementation
 void JoinCommand::execute(int clientSocket, const std::vector<std::string>& args) {
-	if (args.size() < 2) {
-		send(clientSocket, "ERROR: Channel name required\n", 29, 0);
+	if (args.size() < 2 || args[1].empty()) {
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: Channel name required\n");
+		LOG_ERROR("JOIN command received with no channel name from client " + std::to_string(clientSocket));
 		return;
 	}
 	std::string channelName = args[1];
 	ChannelManager& channelManager = ChannelManager::getInstance();
 	Channel* channel = channelManager.getChannel(channelName);
+	Client* client = ClientManager::getInstance().getClient(clientSocket);
 	if (!channel) {
-		channelManager.createChannel(channelName);
+		channelManager.createChannel(channelName, client);
 		channel = channelManager.getChannel(channelName);
-		LOG("Channel created: " + channelName);
+		LOG_INFO("Channel created: " + channelName);
 	}
 	channel->addClient(clientSocket);
-	Client* client = ClientManager::getInstance().getClient(clientSocket);
 	if (client) {
 		std::string joinMessage = client->getNickname() + " has joined the channel\n";
 		channel->broadcastMessage(joinMessage, clientSocket);
-		LOG("Client " + std::to_string(clientSocket) + " joined channel " + channelName);
+		LOG_INFO("Client " + std::to_string(clientSocket) + " joined channel " + channelName);
 	}
 }
 
 // PART command class implementation
 void PartCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 2) {
-		send(clientSocket, "ERROR: Channel name required\n", 29, 0);
+
+
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: Channel name required\n");
 		return;
 	}
 	std::string channelName = args[1];
@@ -832,7 +680,7 @@ void PartCommand::execute(int clientSocket, const std::vector<std::string>& args
 		if (client) {
 			std::string partMessage = client->getNickname() + " has left the channel\n";
 			channel->broadcastMessage(partMessage, clientSocket);
-			LOG("Client " + std::to_string(clientSocket) + " left channel " + channelName);
+			LOG_INFO("Client " + std::to_string(clientSocket) + " left channel " + channelName);
 		}
 	}
 }
@@ -840,7 +688,7 @@ void PartCommand::execute(int clientSocket, const std::vector<std::string>& args
 // PRIVMSG command class implementation
 void PrivmsgCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 3) {
-		send(clientSocket, "ERROR: Recipient and message required\n", 38, 0);
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: Recipient and message required\n");
 		return;
 	}
 	std::string recipient = args[1];
@@ -851,7 +699,7 @@ void PrivmsgCommand::execute(int clientSocket, const std::vector<std::string>& a
 		if (client) {
 			std::string privMessage = client->getNickname() + ": " + message + "\n";
 			channel->broadcastMessage(privMessage, clientSocket);
-			LOG("Client " + std::to_string(clientSocket) + " sent message to channel " + recipient + ": " + message);
+			LOG_INFO("Client " + std::to_string(clientSocket) + " sent message to channel " + recipient + ": " + message);
 		}
 	}
 }
@@ -859,13 +707,17 @@ void PrivmsgCommand::execute(int clientSocket, const std::vector<std::string>& a
 // KICK command class implementation
 void KickCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 3) {
-		send(clientSocket, "ERROR: User to kick and reason required\n", 40, 0);
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: User to kick and reason required\n");
 		return;
 	}
 	std::string channelName = args[1];
 	std::string userToKick = args[2];
 	Channel* channel = ChannelManager::getInstance().getChannel(channelName);
 	if (channel) {
+		if (!channel->isOperator(clientSocket)) {
+			ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: You are not an operator\n");
+			return;
+		}
 		Client* kickClient = ClientManager::getInstance().getClient(userToKick);
 		if (kickClient) {
 			channel->removeClient(kickClient->getSocket());
@@ -873,7 +725,7 @@ void KickCommand::execute(int clientSocket, const std::vector<std::string>& args
 			if (client) {
 				std::string kickMessage = userToKick + " was kicked from the channel by " + client->getNickname() + "\n";
 				channel->broadcastMessage(kickMessage, clientSocket);
-				LOG("Client " + std::to_string(clientSocket) + " kicked " + userToKick + " from channel " + channelName);
+				LOG_INFO("Client " + std::to_string(clientSocket) + " kicked " + userToKick + " from channel " + channelName);
 			}
 		}
 	}
@@ -882,48 +734,102 @@ void KickCommand::execute(int clientSocket, const std::vector<std::string>& args
 // INVITE command class implementation
 void InviteCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 3) {
-		send(clientSocket, "ERROR: User to invite and channel name required\n", 48, 0);
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: User to invite and channel name required\n");
 		return;
 	}
 	std::string userToInvite = args[1];
 	std::string channelName = args[2];
-	Client* inviteClient = ClientManager::getInstance().getClient(userToInvite);
-	if (inviteClient) {
-		std::string inviteMessage = "You have been invited to join " + channelName + "\n";
-		inviteClient->sendMessage(inviteMessage);
-		LOG("Client " + std::to_string(clientSocket) + " invited " + userToInvite + " to channel " + channelName);
+	Channel* channel = ChannelManager::getInstance().getChannel(channelName);
+	if (channel) {
+		if (!channel->isOperator(clientSocket)) {
+			ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: You are not an operator\n");
+			return;
+		}
+		Client* inviteClient = ClientManager::getInstance().getClient(userToInvite);
+		if (inviteClient) {
+			std::string inviteMessage = "You have been invited to join " + channelName + "\n";
+			inviteClient->sendMessage(inviteMessage);
+			LOG_INFO("Client " + std::to_string(clientSocket) + " invited " + userToInvite + " to channel " + channelName);
+		}
 	}
 }
 
 // TOPIC command class implementation
 void TopicCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 3) {
-		send(clientSocket, "ERROR: Channel name and topic required\n", 40, 0);
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: Channel name and topic required\n");
 		return;
 	}
 	std::string channelName = args[1];
 	std::string topic = args[2];
 	Channel* channel = ChannelManager::getInstance().getChannel(channelName);
 	if (channel) {
+		if (!channel->isOperator(clientSocket)) {
+			ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: You are not an operator\n");
+			return;
+		}
 		std::string topicMessage = "Topic for " + channelName + " set to: " + topic + "\n";
 		channel->broadcastMessage(topicMessage, -1);
-		LOG("Topic for channel " + channelName + " set to: " + topic);
+		LOG_INFO("Topic for channel " + channelName + " set to: " + topic);
 	}
 }
 
 // MODE command class implementation
 void ModeCommand::execute(int clientSocket, const std::vector<std::string>& args) {
 	if (args.size() < 3) {
-		send(clientSocket, "ERROR: Channel name and mode required\n", 37, 0);
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: Channel name and mode required\n");
 		return;
 	}
-	// Mode implementation can vary depending on requirements
-	std::string modeMessage = "Mode command executed\n";
-	send(clientSocket, modeMessage.c_str(), modeMessage.size(), 0);
-	LOG("Mode command executed by client " + std::to_string(clientSocket));
+	std::string channelName = args[1];
+	Channel* channel = ChannelManager::getInstance().getChannel(channelName);
+	if (channel) {
+		if (!channel->isOperator(clientSocket)) {
+			ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: You are not an operator\n");
+			return;
+		}
+		std::string modeMessage = "Mode command executed\n";
+		ClientManager::getInstance().sendMessageToClient(clientSocket, modeMessage);
+		LOG_INFO("Mode command executed by client " + std::to_string(clientSocket));
+	}
 }
 
-// Command factory class implementation
+// CAP command class implementation
+void CapCommand::execute(int clientSocket, const std::vector<std::string>& args) {
+	if (args.size() < 2) {
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: CAP command requires parameters\n");
+		return;
+	}
+	std::string subCommand = args[1];
+	std::ostringstream response;
+
+	if (subCommand == "LS") {
+		// CAP LS와 CAP LS 302 처리
+		if (args.size() == 3 && args[2] == "302") {
+			ClientManager::getInstance().sendMessageToClient(clientSocket, "CAP LS 302 :multi-prefix sasl\n");
+		} else {
+			ClientManager::getInstance().sendMessageToClient(clientSocket, "CAP LS :multi-prefix sasl\n");
+		}
+	} else if (subCommand == "REQ") {
+		if (args.size() < 3) {
+			ClientManager::getInstance().sendMessageToClient(clientSocket, "ERROR: CAP REQ requires parameters\n");
+			return;
+		}
+		std::string reqParams = args[2];
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "CAP ACK :" + reqParams + "\n");
+	} else if (subCommand == "END") {
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "CAP END\n");
+	} else {
+		ClientManager::getInstance().sendMessageToClient(clientSocket, "CAP ERROR :Unknown CAP subcommand\n");
+	}
+
+	LOG_INFO("CAP command executed: " + subCommand + " by client " + std::to_string(clientSocket));
+}
+
+CommandFactory& CommandFactory::getInstance() {
+	static CommandFactory instance;
+	return instance;
+}
+
 CommandFactory::CommandFactory() {
 	this->commands["NICK"] = new NickCommand();
 	this->commands["USER"] = new UserCommand();
@@ -934,6 +840,7 @@ CommandFactory::CommandFactory() {
 	this->commands["INVITE"] = new InviteCommand();
 	this->commands["TOPIC"] = new TopicCommand();
 	this->commands["MODE"] = new ModeCommand();
+	this->commands["CAP"] = new CapCommand();
 }
 
 CommandFactory::~CommandFactory() {
@@ -946,55 +853,60 @@ Command* CommandFactory::getCommand(const std::string& commandName) {
 	if (this->commands.find(commandName) != this->commands.end()) {
 		return this->commands[commandName];
 	} else {
+		LOG_ERROR("Command not found: " + commandName);
 		return NULL;
 	}
 }
-
 ```
-## ../IRC/source/main.cpp
-```c++
+
+### 42/IRC/source/main.cpp
+
+```cpp
 #include "IRCServer.hpp"
 
 int main(int argc, char* argv[]) {
 	if (argc != 3) {
 		std::cerr << "Usage: " << argv[0] << " <port> <password>" << std::endl;
-		return 1;
+		return EXIT_FAILURE;
 	}
 
 	int port = std::atoi(argv[1]);
 	std::string password = argv[2];
 
 	try {
-		IRCServer::getInstance().start(port, password);
+		IRCServer::getInstance().run(port, password);
 	} catch (const std::exception& e) {
-		std::cerr << "Exception occurred while starting the server: " << e.what() << std::endl;
-		return 1;
+		std::cerr << "Exception occurred while running the server: " << e.what() << std::endl;
+		IRCServer::getInstance().stop();
+		return EXIT_FAILURE;
 	}
 
-	return 0;
+	return EXIT_SUCCESS;
 }
-
 ```
-## ../IRC/source/ClientManager.cpp
-```c++
+
+### 42/IRC/source/ClientManager.cpp
+
+```cpp
 #include "ClientManager.hpp"
-#include "_Debug.hpp"
+#include "Logging.hpp"
 
 ClientManager& ClientManager::getInstance() {
 	static ClientManager instance;
 	return instance;
 }
 
-void ClientManager::addClient(int socket, Client* client) {
+void ClientManager::addClient(int socket) {
+	Client* client = new Client(socket);
 	this->clients[socket] = client;
-	LOG("Client added with socket: " + std::to_string(socket));
+	LOG_INFO("Client added with socket: " + std::to_string(socket));
 }
 
 void ClientManager::removeClient(int socket) {
 	if (this->clients.find(socket) != this->clients.end()) {
 		delete this->clients[socket];
 		this->clients.erase(socket);
-		LOG("Client removed with socket: " + std::to_string(socket));
+		LOG_INFO("Client removed with socket: " + std::to_string(socket));
 	}
 }
 
@@ -1002,6 +914,7 @@ Client* ClientManager::getClient(int socket) {
 	if (this->clients.find(socket) != this->clients.end()) {
 		return this->clients[socket];
 	} else {
+		LOG_ERROR("Client not found with socket: " + std::to_string(socket));
 		return NULL;
 	}
 }
@@ -1012,7 +925,14 @@ Client* ClientManager::getClient(const std::string& nickname) {
 			return it->second;
 		}
 	}
+	LOG_ERROR("Client not found with nickname: " + nickname);
 	return NULL;
 }
 
+void ClientManager::sendMessageToClient(int clientSocket, const std::string& message) {
+	Client* client = this->getClient(clientSocket);
+	if (client) {
+		client->sendMessage(message);
+	}
+}
 ```

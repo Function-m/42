@@ -20,12 +20,12 @@ def restore_files_from_markdown(markdown_content):
     file_content = []
 
     for line in lines:
-        if line.startswith("## "):
+        if line.startswith("### "):
             # Save the previous file if there was one
             if current_file:
                 save_file_content(current_file, "\n".join(file_content))
                 file_content = []
-            current_file = line[3:]
+            current_file = line[4:]
         elif line.startswith("```"):
             continue
         else:

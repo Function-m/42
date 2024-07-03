@@ -1,20 +1,24 @@
+
 #include "IRCServer.hpp"
-#include "Logging.hpp"
+
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <sstream>
-#include <fcntl.h>
-#include <stdexcept>
-#include "ClientManager.hpp"
-#include "ChannelManager.hpp"
-#include "Command.hpp"
 
-IRCServer& IRCServer::getInstance() {
+#include <sstream>
+#include <stdexcept>
+
+#include "ChannelManager.hpp"
+#include "ClientManager.hpp"
+#include "Command.hpp"
+#include "Logging.hpp"
+
+IRCServer &IRCServer::getInstance() {
 	static IRCServer instance;
 	return instance;
 }
 
-void IRCServer::run(int port, const std::string& password) {
+void IRCServer::run(int port, const std::string &password) {
 	this->serverPassword = password;
 	this->serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->serverSocket < 0) {
@@ -27,7 +31,7 @@ void IRCServer::run(int port, const std::string& password) {
 	serverAddr.sin_port = htons(port);
 	serverAddr.sin_addr.s_addr = INADDR_ANY;
 
-	if (bind(this->serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
+	if (bind(this->serverSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0) {
 		throw std::runtime_error("Socket binding failed");
 	}
 	LOG_INFO("Socket bound to port " + std::to_string(port));
@@ -43,6 +47,7 @@ void IRCServer::run(int port, const std::string& password) {
 	this->pollfds.push_back(pfd);
 
 	LOG_INFO("IRC server started on port " + std::to_string(port));
+
 	while (true) {
 		int pollCount = poll(&this->pollfds[0], this->pollfds.size(), -1);
 		if (pollCount < 0) {
@@ -83,15 +88,14 @@ void IRCServer::acceptNewClient() {
 		this->pollfds.push_back(pfd);
 
 		LOG_INFO("New client connected with socket: " + std::to_string(clientSocket));
-	} catch (const std::exception& e) {
+	} catch (const std::exception &e) {
 		LOG_ERROR("Exception occurred while accepting a client: " + std::string(e.what()));
 	}
 }
 
-
 void IRCServer::processClientMessage(int clientSocket) {
-	Client* client = ClientManager::getInstance().getClient(clientSocket);
-	CommandFactory commandFactory;
+	Client *client = ClientManager::getInstance().getClient(clientSocket);
+	CommandFactory &commandFactory = CommandFactory::getInstance();
 
 	try {
 		std::vector<std::string> messages = client->receiveMessages();
@@ -107,16 +111,17 @@ void IRCServer::processClientMessage(int clientSocket) {
 				args.push_back(arg);
 			}
 
-			Command* command = commandFactory.getCommand(commandName);
+			Command *command = commandFactory.getCommand(commandName);
 			if (command) {
 				LOG_DEBUG("Executing command: " + commandName + " from client: " + std::to_string(clientSocket));
 				command->execute(clientSocket, args);
 			} else {
-				client->sendMessage("ERROR: Unknown command\n");
+				std::string errorMsg = "ERROR: Unknown command: " + commandName;
+				ClientManager::getInstance().sendMessageToClient(clientSocket, errorMsg);
 				LOG_ERROR("Unknown command received from client " + std::to_string(clientSocket) + ": " + commandName);
 			}
 		}
-	} catch (const std::exception& e) {
+	} catch (const std::exception &e) {
 		LOG_ERROR("Exception occurred while handling a client: " + std::string(e.what()));
 		close(clientSocket);
 		this->removeClient(clientSocket);
@@ -147,6 +152,6 @@ std::string IRCServer::getServerPassword() const {
 	return this->serverPassword;
 }
 
-void IRCServer::setServerPassword(const std::string& password) {
+void IRCServer::setServerPassword(const std::string &password) {
 	this->serverPassword = password;
 }
