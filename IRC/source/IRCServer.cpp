@@ -1,106 +1,102 @@
 #include "IRCServer.hpp"
-
-#include <fcntl.h>
+#include "Logging.hpp"
 #include <netinet/in.h>
 #include <unistd.h>
-
-#include <algorithm>
 #include <sstream>
+#include <fcntl.h>
 #include <stdexcept>
+#include "ClientManager.hpp"
+#include "ChannelManager.hpp"
+#include "Command.hpp"
 
 IRCServer& IRCServer::getInstance() {
 	static IRCServer instance;
 	return instance;
 }
 
-void IRCServer::start(int port, const std::string& password) {
-	try {
-		serverPassword = password;
-		serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-		if (serverSocket < 0) {
-			throw std::runtime_error("Socket creation failed");
+void IRCServer::run(int port, const std::string& password) {
+	this->serverPassword = password;
+	this->serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (this->serverSocket < 0) {
+		throw std::runtime_error("Socket creation failed");
+	}
+	LOG_INFO("Socket created successfully");
+
+	sockaddr_in serverAddr;
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_port = htons(port);
+	serverAddr.sin_addr.s_addr = INADDR_ANY;
+
+	if (bind(this->serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
+		throw std::runtime_error("Socket binding failed");
+	}
+	LOG_INFO("Socket bound to port " + std::to_string(port));
+
+	if (listen(this->serverSocket, 5) < 0) {
+		throw std::runtime_error("Socket listening failed");
+	}
+	LOG_INFO("Socket is listening");
+
+	struct pollfd pfd;
+	pfd.fd = this->serverSocket;
+	pfd.events = POLLIN;
+	this->pollfds.push_back(pfd);
+
+	LOG_INFO("IRC server started on port " + std::to_string(port));
+	while (true) {
+		int pollCount = poll(&this->pollfds[0], this->pollfds.size(), -1);
+		if (pollCount < 0) {
+			throw std::runtime_error("Poll failed");
 		}
 
-		sockaddr_in serverAddr;
-		serverAddr.sin_family = AF_INET;
-		serverAddr.sin_port = htons(port);
-		serverAddr.sin_addr.s_addr = INADDR_ANY;
-
-		if (bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
-			throw std::runtime_error("Socket binding failed");
-		}
-
-		if (listen(serverSocket, 5) < 0) {
-			throw std::runtime_error("Socket listening failed");
-		}
-
-		struct pollfd pfd;
-		pfd.fd = serverSocket;
-		pfd.events = POLLIN;
-		pollfds.push_back(pfd);
-
-		std::cout << "IRC server started on port " << port << std::endl;
-
-		while (true) {
-			int pollCount = poll(&pollfds[0], pollfds.size(), -1);
-			if (pollCount < 0) {
-				throw std::runtime_error("Poll failed");
-			}
-
-			for (size_t i = 0; i < pollfds.size(); ++i) {
-				if (pollfds[i].revents & POLLIN) {
-					if (pollfds[i].fd == serverSocket) {
-						acceptClient();
-					} else {
-						handleClient(pollfds[i].fd);
-					}
+		for (size_t i = 0; i < this->pollfds.size(); ++i) {
+			if (this->pollfds[i].revents & POLLIN) {
+				if (this->pollfds[i].fd == this->serverSocket) {
+					this->acceptNewClient();
+				} else {
+					this->processClientMessage(this->pollfds[i].fd);
 				}
 			}
 		}
-	} catch (const std::exception& e) {
-		std::cerr << "Exception occurred while running the server: " << e.what() << std::endl;
-		stop();
 	}
 }
 
 void IRCServer::stop() {
-	close(serverSocket);
-	// Close all client sockets and free memory
-	for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
-		delete it->second;
-	}
-	clients.clear();
-	pollfds.clear();
+	close(this->serverSocket);
+	ClientManager::getInstance().~ClientManager();
+	this->pollfds.clear();
+	LOG_INFO("Server stopped");
 }
 
-void IRCServer::acceptClient() {
+void IRCServer::acceptNewClient() {
 	try {
-		int clientSocket = accept(serverSocket, NULL, NULL);
+		int clientSocket = accept(this->serverSocket, NULL, NULL);
 		if (clientSocket < 0) {
 			throw std::runtime_error("Client connection acceptance failed");
 		}
 
-		// Create client object and add to map
-		clients[clientSocket] = new Client(clientSocket);
+		ClientManager::getInstance().addClient(clientSocket);
 
 		struct pollfd pfd;
 		pfd.fd = clientSocket;
 		pfd.events = POLLIN;
-		pollfds.push_back(pfd);
+		this->pollfds.push_back(pfd);
 
-		std::cout << "New client connected" << std::endl;
+		LOG_INFO("New client connected with socket: " + std::to_string(clientSocket));
 	} catch (const std::exception& e) {
-		std::cerr << "Exception occurred while accepting a client: " << e.what() << std::endl;
+		LOG_ERROR("Exception occurred while accepting a client: " + std::string(e.what()));
 	}
 }
 
-void IRCServer::handleClient(int clientSocket) {
-	Client* client = clients[clientSocket];
+
+void IRCServer::processClientMessage(int clientSocket) {
+	Client* client = ClientManager::getInstance().getClient(clientSocket);
 	CommandFactory commandFactory;
 
 	try {
 		std::vector<std::string> messages = client->receiveMessages();
 		for (std::vector<std::string>::iterator it = messages.begin(); it != messages.end(); ++it) {
+			LOG_DEBUG("Received from client " + std::to_string(clientSocket) + ": " + *it);
 			std::istringstream iss(*it);
 			std::string commandName;
 			std::vector<std::string> args;
@@ -113,34 +109,44 @@ void IRCServer::handleClient(int clientSocket) {
 
 			Command* command = commandFactory.getCommand(commandName);
 			if (command) {
+				LOG_DEBUG("Executing command: " + commandName + " from client: " + std::to_string(clientSocket));
 				command->execute(clientSocket, args);
 			} else {
 				client->sendMessage("ERROR: Unknown command\n");
+				LOG_ERROR("Unknown command received from client " + std::to_string(clientSocket) + ": " + commandName);
 			}
 		}
 	} catch (const std::exception& e) {
-		std::cerr << "Exception occurred while handling a client: " << e.what() << std::endl;
+		LOG_ERROR("Exception occurred while handling a client: " + std::string(e.what()));
 		close(clientSocket);
-		removeClient(clientSocket);
+		this->removeClient(clientSocket);
 	}
 }
 
 void IRCServer::removeClient(int clientSocket) {
-	if (clients.find(clientSocket) != clients.end()) {
-		delete clients[clientSocket];
-		clients.erase(clientSocket);
-	}
+	ClientManager::getInstance().removeClient(clientSocket);
 
-	for (std::vector<struct pollfd>::iterator it = pollfds.begin(); it != pollfds.end(); ++it) {
+	for (std::vector<struct pollfd>::iterator it = this->pollfds.begin(); it != this->pollfds.end(); ++it) {
 		if (it->fd == clientSocket) {
-			pollfds.erase(it);
+			this->pollfds.erase(it);
 			break;
 		}
 	}
+	LOG_INFO("Client removed: " + std::to_string(clientSocket));
 }
 
-void IRCServer::setNickname(int clientSocket, const std::string& nickname) {
-	if (clients.find(clientSocket) != clients.end()) {
-		clients[clientSocket]->setNickname(nickname);
-	}
+int IRCServer::getServerSocket() const {
+	return this->serverSocket;
+}
+
+void IRCServer::setServerSocket(int socket) {
+	this->serverSocket = socket;
+}
+
+std::string IRCServer::getServerPassword() const {
+	return this->serverPassword;
+}
+
+void IRCServer::setServerPassword(const std::string& password) {
+	this->serverPassword = password;
 }

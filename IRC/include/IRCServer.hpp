@@ -1,35 +1,32 @@
 #ifndef IRCSERVER_HPP
 #define IRCSERVER_HPP
 
-#include <poll.h>
-
 #include <iostream>
-#include <map>
 #include <string>
 #include <vector>
-
-#include "Client.hpp"
-#include "Command.hpp"
+#include <poll.h>
 
 class IRCServer {
-   public:
+public:
 	static IRCServer& getInstance();
-	void start(int port, const std::string& password);
+	void run(int port, const std::string& password);
 	void stop();
-	void setNickname(int clientSocket, const std::string& nickname);
+	int getServerSocket() const;
+	void setServerSocket(int socket);
+	std::string getServerPassword() const;
+	void setServerPassword(const std::string& password);
 
-   private:
+private:
 	IRCServer() {}
 	IRCServer(const IRCServer&);
 	IRCServer& operator=(const IRCServer&);
-	void acceptClient();
-	void handleClient(int clientSocket);
+	void acceptNewClient();
+	void processClientMessage(int clientSocket);
 	void removeClient(int clientSocket);
 
 	int serverSocket;
 	std::string serverPassword;
-	std::map<int, Client*> clients;
 	std::vector<struct pollfd> pollfds;
 };
 
-#endif	// IRCSERVER_HPP
+#endif // IRCSERVER_HPP

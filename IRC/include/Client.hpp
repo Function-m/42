@@ -1,25 +1,26 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include <netinet/in.h>
-
 #include <string>
 #include <vector>
 
 class Client {
-   public:
+public:
 	Client(int socket);
 	~Client();
 
-	void sendMessage(const std::string& message);
-	std::vector<std::string> receiveMessages();
+	int getSocket() const;
+	void setSocket(int socket);
 	std::string getNickname() const;
 	void setNickname(const std::string& nickname);
 
-   private:
+	void sendMessage(const std::string& message);
+	std::vector<std::string> receiveMessages();
+
+private:
 	int clientSocket;
 	std::string nickname;
-	std::string buffer;	 // Command buffer
+	std::string commandBuffer;
 };
 
-#endif	// CLIENT_HPP
+#endif // CLIENT_HPP
