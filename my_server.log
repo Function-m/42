@@ -1,0 +1,13 @@
+<< CAP LS 302
+<< JOIN :
+>> CAP * LS :
+<< CAP END
+<< NICK suham
+<< USER suham suham 127.0.0.1 :Sumin Ham
+>> ERROR: Registration required
+>> :server 001 suham :Welcome to the Internet Relay Network suham
+<< MODE suham +i
+>> ERROR: Channel name and mode required
+<< PING server
+>> PONG server
+--> lag pong
