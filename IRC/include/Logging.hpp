@@ -1,4 +1,3 @@
-
 #ifndef _DEBUG_HPP
 #define _DEBUG_HPP
 
