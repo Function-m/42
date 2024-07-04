@@ -4,7 +4,7 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "cd ${fileDirname} && make clean && make NAME=output",
+            "command": "cd ${fileDirname}/.. && make clean && make debug DEBUG_NAME=output",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -20,7 +20,7 @@
         {
             "label": "clean",
             "type": "shell",
-            "command": "cd ${fileDirname} && make fclean NAME=output",
+            "command": "cd ${fileDirname}/.. && make fclean DEBUG_NAME=output",
             "problemMatcher": [],
             "presentation": {
                 "close": true,

@@ -5,9 +5,10 @@
       "name": "Debug",
       "type": "lldb",
       "request": "launch",
-      "program": "${fileDirname}/output",
+      "program": "${fileDirname}/../output",
       "args": [
-        "${input:executableArgs}"
+        "${input:executableArgs}",
+        "123"
       ],
       "cwd": "${fileDirname}",
       "preLaunchTask": "build",
