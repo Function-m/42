@@ -3,30 +3,51 @@
 
 #include <string>
 #include <vector>
+#include <set>
+#include <poll.h>
 
 class Client {
-public:
-    Client(int socket);
-    ~Client();
+   public:
+	Client(int socket);
+	~Client();
 
-    int getSocket() const;
-    void setSocket(int socket);
-    std::string getNickname() const;
-    void setNickname(const std::string& nickname);
+	// For communication
+	void sendMessage(const std::string& message);
+	std::vector<std::string> receiveMessages();
 
-    std::string getRegistrationStep() const;
-    void setRegistrationStep(std::string step);
-    
-    void sendMessage(const std::string& message);
-    std::vector<std::string> receiveMessages();
-    std::vector<std::string> getChannels() const;
+	// Methods for "clientSocket"
+	int getSocket() const;
+	void setSocket(int socket);
 
-private:
-    int clientSocket;
-    std::string nickname;
-    std::string registrationStep;
-    std::string commandBuffer;
-    std::vector<std::string> channels;
+	// Methods for "registrationStep"
+	enum e_registrationStep { PASS, NICK, USER, REGISTERED, REGISTRATION_COUNT };
+	int getRegistrationStep() const;
+	void setRegistrationStep(int step);
+
+	// Methods for "UserInfo"
+	enum e_userInfo { NICKNAME, USER_NAME, HOST_NAME, SERVER_NAME, REAL_NAME, INFO_COUNT };
+	std::string getUserInfo(int idx) const;
+	std::string setUserInfo(int idx, const std::string& info);
+
+   private:
+	int clientSocket;
+	int registrationStep;
+	std::string userInfo[INFO_COUNT];
+	std::string commandBuffer;
+
+   // Exception classes
+   public:
+	class FatalError : public std::runtime_error {
+	   public:
+		explicit FatalError(const std::string& message) : std::runtime_error(message) {}
+		virtual ~FatalError() throw() {}
+	};
+   private:
+	class GeneralError : public std::runtime_error {
+	   public:
+		explicit GeneralError(const std::string& message) : std::runtime_error(message) {}
+		virtual ~GeneralError() throw() {}
+	};
 };
 
-#endif // CLIENT_HPP
+#endif	// CLIENT_HPP

@@ -7,53 +7,53 @@ Channel::Channel(const std::string& name, int creatorSocket) {
     if (name[0] != '#' || name.size() > 9 || name == "#root" || name == "#admin") {
         throw std::runtime_error("Invalid channel name");
     }
-    this->channelInfo[NAME] = name;
-    this->channelInfo[TOPIC] = "";
-    this->channelInfo[LIMIT] = "0";
-    this->channelInfo[PASSWORD] = "";
-    this->channelInfo[INVITE_ONLY] = "0";
+    this->chatInfo[CHAT_NAME] = name;
+    this->chatInfo[TOPIC] = "";
+    this->chatInfo[LIMITS] = "0";
+    this->chatInfo[PASSWORD] = "";
+    this->chatInfo[INVITE_ONLY] = "0";
 
-    addClientSocket(creatorSocket);
-    addOperatorSocket(creatorSocket);
+    addClient(creatorSocket);
+    addOperator(creatorSocket);
 }
 
 Channel::~Channel() {}
 
-void Channel::addClientSocket(int clientSocket, const std::string password) {
-    if (this->channelInfo[PASSWORD] != password) {
+void Channel::addClient(int clientSocket, const std::string password) {
+    if (this->chatInfo[PASSWORD] != password) {
         throw std::runtime_error("Invalid password");
     }
-    if (this->channelInfo[INVITE_ONLY] == "1" && this->inviteSockets.find(clientSocket) == this->inviteSockets.end()) {
+    if (this->chatInfo[INVITE_ONLY] == "1" && this->inviteSockets.find(clientSocket) == this->inviteSockets.end()) {
         throw std::runtime_error("You need to be invited to join this channel");
     }
-    if (this->channelInfo[LIMIT] != "0" && this->clientSockets.size() >= std::stoi(this->channelInfo[LIMIT])) {
+    if (this->chatInfo[LIMITS] != "0" && this->clientSockets.size() >= std::stoi(this->chatInfo[LIMITS])) {
         throw std::runtime_error("Channel is full");
     }
-    if (this->channelInfo[TOPIC] != "") {
-        (ClientManager::getInstance().getClient(clientSocket))->sendMessage("TOPIC " + this->channelInfo[TOPIC]);
+    if (this->chatInfo[TOPIC] != "") {
+        (ClientManager::getInstance().getClient(clientSocket))->sendMessage("TOPIC " + this->chatInfo[TOPIC]);
     }
     this->clientSockets.insert(clientSocket);
 }
 
-void Channel::removeClientSocket(int clientSocket) {
+void Channel::removeClient(int clientSocket) {
     this->clientSockets.erase(clientSocket);
-    this->removeOperatorSocket(clientSocket);
+    this->removeOperator(clientSocket);
     if (this->clientSockets.empty()) {
-        ChannelManager::getInstance().removeChannel(this->channelInfo[NAME]);
+        ChannelManager::getInstance().removeChannel(this->chatInfo[CHAT_NAME]);
     }
 }
 
-void Channel::addInviteSocket(int clientSocket) {
+void Channel::addInvite(int clientSocket) {
     this->inviteSockets.insert(clientSocket);
 }
 
-void Channel::removeInviteSocket(int clientSocket) {
+void Channel::removeInvite(int clientSocket) {
     this->inviteSockets.erase(clientSocket);
 }
 
 void Channel::setInfo(int idx, const std::string info) {
     std::string message;
-    if (info == this->channelInfo[idx]) {
+    if (info == this->chatInfo[idx]) {
         return;
     }
     switch (idx) {
@@ -75,10 +75,10 @@ void Channel::setInfo(int idx, const std::string info) {
             }
 			message = "INVITE_ONLY";
 			break;
-		case NAME:
+		case CHAT_NAME:
 			throw std::runtime_error("Cannot change channel name");
 			break;
-        case LIMIT:
+        case LIMITS:
 			if (std::stoi(info) < this->clientSockets.size()) {
 				throw std::runtime_error("Cannot set limits lower than current number of clients");
 			}
@@ -88,18 +88,18 @@ void Channel::setInfo(int idx, const std::string info) {
 			return;
 	}
     if (info == "") {
-        this->broadcastMessage("Channel " + this->channelInfo[NAME] + " " + message + " has been removed", -1);
+        this->broadcastMessage("Channel " + this->chatInfo[CHAT_NAME] + " " + message + " has been removed", -1);
     } else {
-        this->broadcastMessage("Channel " + this->channelInfo[NAME] + " " + message + " has been updated", -1);
+        this->broadcastMessage("Channel " + this->chatInfo[CHAT_NAME] + " " + message + " has been updated", -1);
     }
-    this->channelInfo[idx] = info;
+    this->chatInfo[idx] = info;
 }
 
 std::string Channel::getInfo(int idx) const {
     if (idx < 0 || idx >= INFO_COUNT) {
         throw std::runtime_error("Invalid info index");
     }
-    return this->channelInfo[idx];
+    return this->chatInfo[idx];
 }
 
 void Channel::broadcastMessage(const std::string& message, int senderSocket) {
@@ -112,16 +112,16 @@ void Channel::broadcastMessage(const std::string& message, int senderSocket) {
 }
 
 bool Channel::isOperator(int clientSocket) const {
-    return this->operatorSockets.find(clientSocket) != this->operatorSockets.end();
+    return this->operators.find(clientSocket) != this->operators.end();
 }
 
-void Channel::addOperatorSocket(int clientSocket) {
-    this->operatorSockets.insert(clientSocket);
+void Channel::addOperator(int clientSocket) {
+    this->operators.insert(clientSocket);
 }
 
-void Channel::removeOperatorSocket(int clientSocket) {
-    this->operatorSockets.erase(clientSocket);
-    if (!this->clientSockets.empty() && this->operatorSockets.empty()) {
-        this->addOperatorSocket(*this->clientSockets.begin());
+void Channel::removeOperator(int clientSocket) {
+    this->operators.erase(clientSocket);
+    if (!this->clientSockets.empty() && this->operators.empty()) {
+        this->addOperator(*this->clientSockets.begin());
     }
 }

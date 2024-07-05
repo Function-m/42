@@ -1,101 +1,71 @@
 #ifndef COMMAND_HPP
 #define COMMAND_HPP
 
-#include <vector>
-#include <string>
 #include <map>
+#include <string>
+#include <vector>
 
-// Command abstract class
 class Command {
-public:
-    virtual ~Command() {}
-    virtual void execute(int clientSocket, const std::vector<std::string>& args) = 0;
+   public:
+    // Singleton
+	static Command& getInstance();
+
+	// Command handler
+	void handleCommand(int clientSocket, const std::string& commandName, const std::vector<std::string>& args);
+	void handleRegistration(int clientSocket, const std::string& commandName, const std::vector<std::string>& args);
+
+   private:
+	// Don't forget mappping for the following commands!!
+	typedef void (Command::*CommandHandler)(int clientSocket, const std::vector<std::string>& args);
+	std::map<std::string, CommandHandler> commands;
+	Command() {
+		commands["NICK"] = &Command::handleNick;
+		commands["USER"] = &Command::handleUser;
+		commands["JOIN"] = &Command::handleJoin;
+		commands["PART"] = &Command::handlePart;
+		commands["PRIVMSG"] = &Command::handlePrivmsg;
+		commands["KICK"] = &Command::handleKick;
+		commands["INVITE"] = &Command::handleInvite;
+		commands["TOPIC"] = &Command::handleTopic;
+		commands["MODE"] = &Command::handleMode;
+		commands["CAP"] = &Command::handleCap;
+		commands["PING"] = &Command::handlePing;
+		commands["PASS"] = &Command::handlePass;
+		commands["QUIT"] = &Command::handleQuit;
+	}
+	CommandHandler getCommand(const std::string& commandName);
+	void handleNick(int clientSocket, const std::vector<std::string>& args);
+	void handleUser(int clientSocket, const std::vector<std::string>& args);
+	void handleJoin(int clientSocket, const std::vector<std::string>& args);
+	void handlePart(int clientSocket, const std::vector<std::string>& args);
+	void handlePrivmsg(int clientSocket, const std::vector<std::string>& args);
+	void handleKick(int clientSocket, const std::vector<std::string>& args);
+	void handleInvite(int clientSocket, const std::vector<std::string>& args);
+	void handleTopic(int clientSocket, const std::vector<std::string>& args);
+	void handleMode(int clientSocket, const std::vector<std::string>& args);
+	void handleCap(int clientSocket, const std::vector<std::string>& args);
+	void handlePing(int clientSocket, const std::vector<std::string>& args);
+	void handlePass(int clientSocket, const std::vector<std::string>& args);
+	void handleQuit(int clientSocket, const std::vector<std::string>& args);
+
+	// No instantiation outside for singletones!!
+	~Command();
+	Command(const Command&);
+	Command& operator=(const Command&);
+
+   // Exception classes
+   public:
+	class FatalError : public std::runtime_error {
+	   public:
+		explicit FatalError(const std::string& message) : std::runtime_error(message) {}
+		virtual ~FatalError() throw() {}
+	};
+   private:
+	class GeneralError : public std::runtime_error {
+	   public:
+		explicit GeneralError(const std::string& message) : std::runtime_error(message) {}
+		virtual ~GeneralError() throw() {}
+	};
 };
 
-// NICK command class
-class NickCommand : public Command {
-public:
-    void execute(int clientSocket, const std::vector<std::string>& args);
-};
-
-// USER command class
-class UserCommand : public Command {
-public:
-    void execute(int clientSocket, const std::vector<std::string>& args);
-};
-
-// JOIN command class
-class JoinCommand : public Command {
-public:
-    void execute(int clientSocket, const std::vector<std::string>& args);
-};
-
-// PART command class
-class PartCommand : public Command {
-public:
-    void execute(int clientSocket, const std::vector<std::string>& args);
-};
-
-// PRIVMSG command class
-class PrivmsgCommand : public Command {
-public:
-    void execute(int clientSocket, const std::vector<std::string>& args);
-};
-
-// KICK command class
-class KickCommand : public Command {
-public:
-    void execute(int clientSocket, const std::vector<std::string>& args);
-};
-
-// INVITE command class
-class InviteCommand : public Command {
-public:
-    void execute(int clientSocket, const std::vector<std::string>& args);
-};
-
-// TOPIC command class
-class TopicCommand : public Command {
-public:
-    void execute(int clientSocket, const std::vector<std::string>& args);
-};
-
-// MODE command class
-class ModeCommand : public Command {
-public:
-    void execute(int clientSocket, const std::vector<std::string>& args);
-};
-
-// CAP command class
-class CapCommand : public Command {
-public:
-    void execute(int clientSocket, const std::vector<std::string>& args);
-};
-
-// PING command class
-class PingCommand : public Command {
-public:
-    void execute(int clientSocket, const std::vector<std::string>& args);
-};
-
-class PassCommand : public Command {
-public:
-    void execute(int clientSocket, const std::vector<std::string>& args);
-};
-
-// Command factory class
-class CommandFactory {
-public:
-    static CommandFactory& getInstance();
-    Command* getCommand(const std::string& commandName);
-
-private:
-    CommandFactory();
-    ~CommandFactory();
-    CommandFactory(const CommandFactory&);
-    CommandFactory& operator=(const CommandFactory&);
-
-    std::map<std::string, Command*> commands;
-};
-
-#endif // COMMAND_HPP
+#endif	// COMMAND_HPP

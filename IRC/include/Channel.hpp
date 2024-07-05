@@ -1,29 +1,42 @@
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
+#include <set>
 #include <string>
-#include <vector>
-#include <map>
-#include "Client.hpp"
+
+#include "Channel.hpp"
 
 class Channel {
-public:
-    Channel(const std::string& name, Client* creator);
-    ~Channel();
+   public:
+	Channel(const std::string& name, int creatorSocket);
+	~Channel();
 
-    std::string getName() const;
-    void addClient(int clientSocket);
-    void removeClient(int clientSocket);
-    void broadcastMessage(const std::string& message, int senderSocket);
-    bool isOperator(int clientSocket) const;
-    void addOperator(int clientSocket);
-    void removeOperator(int clientSocket);
-    void handleOperatorLeft();
+	// For communication
+	void broadcastMessage(const std::string& message, int senderSocket);
 
-private:
-    std::string channelName;
-    std::vector<int> clientSockets;
-    std::map<int, bool> operators;
+	// Methods for "channelInfo"
+	enum e_chatInfo { NAME, TOPIC, LIMIT, PASSWORD, INVITE_ONLY, INFO_COUNT };
+	void setInfo(int idx, const std::string info = "");
+	std::string getInfo(int idx) const;
+
+	// Methods for "clientSockets"
+	void addClientSocket(int clientSocket, std::string password = "");
+	void removeClientSocket(int clientSocket);
+
+	// Methods for "inviteSockets"
+	void addInviteSocket(int clientSocket);
+	void removeInviteSocket(int clientSocket);
+
+	// Methods for "operatorSockets"
+	bool isOperator(int clientSocket) const;
+	void addOperatorSocket(int clientSocket);
+	void removeOperatorSocket(int clientSocket);
+
+   private:
+	std::string channelInfo[INFO_COUNT];
+	std::set<int> clientSockets;
+	std::set<int> inviteSockets;
+	std::set<int> operatorSockets;
 };
 
-#endif // CHANNEL_HPP
+#endif	// CHANNEL_HPP

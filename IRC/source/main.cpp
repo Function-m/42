@@ -1,21 +1,31 @@
+#include "ChannelManager.hpp"
+#include "ClientManager.hpp"
 #include "IRCServer.hpp"
+#include "StringUtils.hpp"
 
 int main(int argc, char* argv[]) {
-    if (argc != 3) {
-        std::cerr << "Usage: " << argv[0] << " <port> <password>" << std::endl;
-        return EXIT_FAILURE;
-    }
+	if (argc != 3) {
+		std::cerr << "Usage: " << argv[0] << " <port> <password>" << std::endl;
+		return EXIT_FAILURE;
+	}
 
-    int port = std::atoi(argv[1]);
-    std::string password = argv[2];
+	try {
+		// Run the server
+		IRCServer::getInstance().run(std::atoi(argv[1]), argv[2]);
 
-    try {
-        IRCServer::getInstance().run(port, password);
-    } catch (const std::exception& e) {
-        std::cerr << "Exception occurred while running the server: " << e.what() << std::endl;
-        IRCServer::getInstance().stop();
-        return EXIT_FAILURE;
-    }
+		// Stop the server
+		IRCServer::getInstance().~IRCServer();
+		ClientManager::getInstance().~ClientManager();
+		ChannelManager::getInstance().~ChannelManager();
+		StringUtils::logInfo("Server stopped");
 
-    return EXIT_SUCCESS;
+	} catch (const std::exception& e) {
+		std::cerr << "Fatal exception: " << e.what() << std::endl;
+		return EXIT_FAILURE;
+	} catch (...) {
+		std::cerr << "Unknown fatal exception" << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
 }

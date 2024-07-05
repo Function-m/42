@@ -31,11 +31,3 @@ void ChannelManager::removeChannel(const std::string& name) {
 int ChannelManager::countChannels() const {
     return this->channels.size();
 }
-
-std::vector<std::string> ChannelManager::getClientChannels(int clientSocket) const {
-	std::map<int, std::vector<std::string> >::const_iterator it = this->clientChannels.find(clientSocket);
-	if (it == this->clientChannels.end()) {
-		return std::vector<std::string>();
-	}
-	return it->second;
-}

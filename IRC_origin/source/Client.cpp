@@ -1,6 +1,4 @@
 #include "Client.hpp"
-#include "ClientManager.hpp"
-#include "ChannelManager.hpp"
 #include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -14,8 +12,6 @@ Client::Client(int socket) : clientSocket(socket), registrationStep(PASS) {
 
 Client::~Client() {
     close(this->clientSocket);
-    ClientManager::getInstance().removeClient(this->clientSocket);
-    ChannelManager::getInstance().removeClientChannels(this->clientSocket);
 }
 
 int Client::getSocket() const {
@@ -85,3 +81,7 @@ std::vector<std::string> Client::receiveMessages() {
     return messages;
 }
 
+
+std::set<std::string> Client::getChannels() const {
+    return this->channels;
+}
