@@ -1,0 +1,184 @@
+/* 여기서 game css 작성하시면 됩니다 */
+/* style.css 에서 id, class 명은 겹치지 않게 조심해 주세요! */
+
+#ponggame-container{
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	/* height: 100vh; */
+}
+
+#ponggame-container #canvas {
+	position:fixed;
+	display: flex;
+	background-color: #52713B;
+	width: 60%;
+	height: 40%;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+#ponggame-container h1 {
+	color: #fff;
+	font-family: sans-serif;
+	font-size: 3vh;
+	/* font-size: 2rem; */
+	position: absolute;
+	bottom: 100px;
+}
+
+#player1Name {
+	top: 25%;
+	left: 20%;
+	z-index: 30;
+}
+
+#player2Name {
+	top: 25%;
+	right: 20%;
+	z-index: 30;
+}
+
+#player1Score {
+	top: 50%;
+	left: 35%;
+	z-index: 30;
+}
+
+#player2Score {
+	top: 50%;
+	right: 35%;
+	z-index: 30;
+}
+
+#roundIndex{
+	top: 70%;
+	font-size: 32px;
+	color: #FFFFFF;
+	white-space: nowrap;
+	text-align: center;
+	z-index: 30;
+}
+
+@media screen and (min-width: 1200px){
+	#ponggame-container #canvas {
+		width: 720px;
+	}
+	#player1Name {
+		left: calc(50% - 360px);
+	}
+	#player2Name {
+		right: calc(50% - 360px);
+	}
+	#player1Score {
+		left: calc(50% - 180px);
+	}
+	#player2Score {
+		right: calc(50% - 180px);
+	}
+}
+
+/* dice game */
+
+#dicegame-container{
+	overflow: hidden;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;	
+}
+
+#dicegame-container #dice{
+	width: 15%;
+}
+
+#dicegame-container #dice-result {
+	font-size: 2em;
+	font-weight: bold;
+	display: none;
+	text-align: center;
+	margin-top: 20px;
+}
+
+#dicegame-container #button-div button{
+	position: fixed;
+	top: 40%;
+	font-size: calc((1.3vw + 1.3vh) / 2);
+	z-index: 30;
+	border-radius: 20px;
+	color: #FFF;
+	min-width: 50px;
+	min-height: 100px;
+}
+
+#dicegame-container #player1Btn{
+	width: 20%;
+	height: 20%;
+	left: 15%;
+	background-color: #64973C;
+	border-color: #64973C;
+}
+
+#dicegame-container #player2Btn{
+	width: 20%;
+	height: 20%;
+	right: 15%;
+	background-color: #64973C;
+	border-color: #64973C;
+}
+
+#dicegame-container #rollBtn{
+	position: fixed;
+	top:75%;
+	width: 30%;
+	height: 10%;
+	border-radius: 20px;
+	max-width: 400px;
+	max-height: 100px;
+}
+
+#dicegame-container img {
+	position: fixed;
+	top: 35%;
+	height: auto;
+}
+
+#dicegame-container #dice {
+	display: none;
+	width: 20%;
+	max-width: 200px;
+}
+#dicegame-container #dice_img {
+	width: 20%;
+	top: 35%;
+	max-width: 200px;
+}
+
+@media screen and (min-height: 600px){
+	#button-div{
+		font-size: calc((2vw + 12px) / 2);	
+	}
+}
+@media screen and (min-width: 600px){
+	#button-div{
+		font-size: calc((12px + 2vh) / 2);	
+	}
+}
+@media screen and (min-height: 600px) and (min-width: 600px){
+	#button-div{
+		font-size: 12px;	
+	}
+}
+
+@media screen and (max-height: 600px){
+	#dicegame-container #dice{
+		width: 100px ;
+	}
+	#dicegame-container #dice_img{
+		width: 100px;
+	}
+} 

@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  nginx:
+    container_name: nginx
+    build:
+      context: ./requirements/nginx
+    ports:
+      - "443:443"
+    networks:
+      - inception_network
+    env_file:
+      - .env
+    depends_on:
+      wordpress:
+        condition: service_healthy
+    restart: always
+
+  wordpress:
+    container_name: wordpress
+    build:
+      context: ./requirements/wordpress
+    volumes:
+      - wordpress_data:/var/www/html
+    expose:
+      - "9000"
+    networks:
+      - inception_network
+    env_file:
+      - .env
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm83 -t || exit 1"]
+      interval: 3s
+      timeout: 10s
+      retries: 5
+    restart: always
+
+  mariadb:
+    container_name: mariadb
+    build:
+      context: ./requirements/mariadb
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    expose:
+      - "3306"
+    networks:
+      - inception_network
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost"]
+      interval: 3s
+      timeout: 10s
+      retries: 5
+    restart: always
+
+volumes:
+  mariadb_data:
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "/home/suham/data/mariadb"
+  wordpress_data:
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "/home/suham/data/wordpress"
+
+networks:
+  inception_network:
+    driver: bridge

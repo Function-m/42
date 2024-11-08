@@ -1,0 +1,38 @@
+/* main */
+@media screen and (max-width: 600px) {
+  #header {
+    flex-direction: column;
+  }
+  #pong-img,
+  #dice-img {
+    width: 150px;
+    height: 100px;
+    height: 100%;
+  }
+}
+
+/* dice */
+@media screen and (max-width: 600px) {
+  #mode-select > p {
+    font-size: 2rem;
+    font-weight: 400;
+  }
+}
+
+/* pong */
+@media screen and (max-width: 600px) {
+  #mode-container {
+    flex-direction: column;
+  }
+}
+
+/* player-container */
+@media screen and (max-width: 1000px) {
+  .player_container {
+    flex-direction: column;
+    width: 100%;
+  }
+  .player_name {
+    width: 90%;
+  }
+}

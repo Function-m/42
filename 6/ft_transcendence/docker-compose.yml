@@ -1,0 +1,64 @@
+version: '3'
+
+services:
+  app:
+    image: app
+    build:
+      context: FE
+      dockerfile: Dockerfile
+    networks:
+      - net_tssan
+    env_file:
+      - ./FE/.env
+    init: true
+    expose:
+      - 1234
+  nginx:
+    image: nginx
+    build: 
+      context: nginx
+      dockerfile: Dockerfile
+    networks:
+      - net_tssan
+    ports:
+      - 80:80
+      - 443:443
+    depends_on :
+      - app
+      - be
+    init: true
+  be:
+    image: be
+    build:
+      context: BE/tssan
+      dockerfile: Dockerfile
+    networks:
+      - net_tssan
+    volumes:
+      - ./:/usr/src/app/
+    expose:
+      - 8000
+    env_file:
+      - ./BE/tssan/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    init: true
+  db:
+    networks:
+      - net_tssan
+    image: postgres:12.0-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./BE/tssan/.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  postgres_data:
+networks:
+  net_tssan:
+    driver: bridge
